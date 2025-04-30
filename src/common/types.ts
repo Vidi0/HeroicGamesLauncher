@@ -687,7 +687,7 @@ export interface WikiInfo {
  * Defines from where the version comes
  */
 export type Type =
-  | 'Wine-GE'
+  | 'UMU-Proton'
   | 'GE-Proton'
   | 'Proton'
   | 'Wine-Lutris'
@@ -719,7 +719,7 @@ export interface VersionInfo {
  * Enum for the supported repositorys
  */
 export enum Repositorys {
-  WINEGE,
+  UMUPROTON,
   PROTONGE,
   PROTON,
   WINELUTRIS,

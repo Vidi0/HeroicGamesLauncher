@@ -50,6 +50,11 @@ export default function WineManager(): JSX.Element | null {
     value: 'protonge',
     enabled: isLinux
   }
+  const umuproton: WineManagerUISettings = {
+    type: 'UMU-Proton',
+    value: 'umuproton',
+    enabled: isLinux
+  }
   const gamePortingToolkit: WineManagerUISettings = {
     type: 'Game-Porting-Toolkit',
     value: 'gpt',
@@ -77,22 +82,12 @@ export default function WineManager(): JSX.Element | null {
 
   const [wineManagerSettings, setWineManagerSettings] = useState<
     WineManagerUISettings[]
-  >([
-    protonge,
-    { type: 'Wine-GE', value: 'winege', enabled: isLinux },
-    gamePortingToolkit,
-    wineCrossover
-  ])
+  >([protonge, umuproton, gamePortingToolkit, wineCrossover])
 
   const getWineVersions = (repo: Type) => {
-    let versions = wineDownloaderInfoStore.get('wine-releases', [])
+    const versions = wineDownloaderInfoStore.get('wine-releases', [])
 
-    if (repo.startsWith('Wine-GE')) {
-      versions = versions.filter((version) => version.type === 'Wine-GE')
-      return versions.filter((version) => !version.version.endsWith('LoL'))
-    } else {
-      return versions.filter((version) => version.type === repo)
-    }
+    return versions.filter((version) => version.type === repo)
   }
 
   const [wineVersions, setWineVersions] = useState<WineVersionInfo[]>(
@@ -127,13 +122,13 @@ export default function WineManager(): JSX.Element | null {
 
   const wineVersionExplanation = useMemo(() => {
     switch (repository.type) {
-      case 'Wine-GE':
+      case 'UMU-Proton':
         return (
           <div className="infoBox">
             <FontAwesomeIcon icon={faWarning} color={'orange'} />
             {t(
-              'wineExplanation.wine-ge',
-              'Wine-GE-Proton is a Wine variant created by Glorious Eggroll. It has been deprecated in favor of GE-Proton with the umu launcher.'
+              'wineExplanation.umu-proton',
+              'UMU-Proton is standard Proton but compatible with the umu launcher (default in Heroic). It does not include some useful patches available in GE-Proton.'
             )}
           </div>
         )
