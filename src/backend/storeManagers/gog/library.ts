@@ -1,4 +1,4 @@
-import { sendFrontendMessage } from '../../main_window'
+import { sendFrontendMessage } from '../../ipc'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { GOGUser } from './user'
 import {
@@ -27,7 +27,6 @@ import {
 } from 'common/types/gog'
 import { dirname, join } from 'node:path'
 import { existsSync, readFileSync } from 'graceful-fs'
-import { app } from 'electron'
 
 import {
   logDebug,
@@ -35,9 +34,8 @@ import {
   logInfo,
   LogPrefix,
   logWarning
-} from '../../logger/logger'
+} from 'backend/logger'
 import { getGOGdlBin, getFileSize, axiosClient } from '../../utils'
-import { gogdlConfigPath, gogdlLogFile } from '../../constants'
 import {
   libraryStore,
   installedGamesStore,
@@ -53,6 +51,8 @@ import { unzipSync } from 'node:zlib'
 import { readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { checkForRedistUpdates } from './redist'
 import { runGogdlCommandStub } from './e2eMock'
+import { gogdlConfigPath } from './constants'
+import { userDataPath } from 'backend/constants/paths'
 
 const library: Map<string, GameInfo> = new Map()
 const installedGames: Map<string, InstalledInfo> = new Map()
@@ -1325,7 +1325,7 @@ export async function runRunnerCommand(
   }
 
   const { dir, bin } = getGOGdlBin()
-  const authConfig = join(app.getPath('userData'), 'gog_store', 'auth.json')
+  const authConfig = join(userDataPath, 'gog_store', 'auth.json')
 
   if (!options) {
     options = {}
@@ -1338,10 +1338,7 @@ export async function runRunnerCommand(
   return callRunner(
     ['--auth-config-path', authConfig, ...commandParts],
     { name: 'gog', logPrefix: LogPrefix.Gog, bin, dir },
-    {
-      ...options,
-      verboseLogFile: gogdlLogFile
-    }
+    options
   )
 }
 

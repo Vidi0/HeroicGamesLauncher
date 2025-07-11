@@ -23,22 +23,6 @@ import { existsSync, mkdirSync } from 'graceful-fs'
 import { join, dirname } from 'path'
 
 import {
-  defaultWinePrefix,
-  fixesPath,
-  flatPakHome,
-  isLinux,
-  isMac,
-  isWindows,
-  isSteamDeckGameMode,
-  runtimePath,
-  userHome,
-  defaultUmuPath,
-  publicDir,
-  tsStore,
-  isCLINoGui,
-  isIntelMac
-} from './constants'
-import {
   constructAndUpdateRPC,
   getSteamRuntime,
   isEpicServiceOffline,
@@ -51,21 +35,14 @@ import {
   isMacSonomaOrHigher
 } from './utils'
 import {
-  appendFileLog,
-  appendGameLog,
-  appendGamePlayLog,
-  appendRunnerLog,
-  initFileLog,
-  initGameLog,
-  initGamePlayLog,
+  createGameLogWriter,
+  getRunnerLogWriter,
   logDebug,
   logError,
   logInfo,
   LogPrefix,
-  logsDisabled,
-  logWarning,
-  stopLogger
-} from './logger/logger'
+  logWarning
+} from './logger'
 import { GlobalConfig } from './config'
 import { GameConfig } from './game_config'
 import { DXVK, Winetricks } from './tools'
@@ -89,13 +66,39 @@ import {
 import { download, isInstalled } from './wine/runtimes/runtimes'
 import { storeMap } from 'common/utils'
 import { runWineCommandOnGame } from './storeManagers/legendary/games'
-import { getMainWindow, sendFrontendMessage } from './main_window'
+import { getMainWindow } from './main_window'
+import { sendFrontendMessage } from './ipc'
 import { getUmuPath, isUmuSupported } from './utils/compatibility_layers'
 import { copyFile } from 'fs/promises'
-import { app, powerSaveBlocker } from 'electron'
+import { app, dialog, powerSaveBlocker } from 'electron'
 import gogPresence from './storeManagers/gog/presence'
 import { updateGOGPlaytime } from './storeManagers/gog/games'
 import { addRecentGame } from './recent_games/recent_games'
+import { tsStore } from './constants/key_value_stores'
+import {
+  defaultUmuPath,
+  defaultWinePrefix,
+  fixesPath,
+  flatpakHome,
+  publicDir,
+  runtimePath,
+  userHome
+} from './constants/paths'
+import {
+  isCLINoGui,
+  isLinux,
+  isMac,
+  isSteamDeckGameMode,
+  isWindows,
+  isIntelMac,
+  isSteamDeck,
+  isFlatpak
+} from './constants/environment'
+import { formatSystemInfo, getSystemInfo } from './utils/systeminfo'
+import { gameAnticheatInfo } from './anticheat/utils'
+
+import type { PartialDeep } from 'type-fest'
+import type LogWriter from './logger/log_writer'
 
 let powerDisplayId: number | null
 
@@ -162,13 +165,27 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
     powerDisplayId = powerSaveBlocker.start('prevent-display-sleep')
   }
 
-  initGamePlayLog(game)
+  const logWriter = await createGameLogWriter(game.app_name, game.runner)
+
+  if (!gameSettings.verboseLogs) {
+    await logWriter.logWarning('IMPORTANT: Logs are disabled', {
+      forceLog: true
+    })
+    await logWriter.logWarning(
+      "Enable verbose logs in Game's settings > Advanced tab > 'Enable verbose logs' before reporting an issue.",
+      { forceLog: true }
+    )
+  }
 
   const isNative = gameManagerMap[runner].isNative(appName)
 
   // check if isNative, if not, check if wine is valid
   if (!isNative) {
-    const isWineOkToLaunch = await checkWineBeforeLaunch(game, gameSettings)
+    const isWineOkToLaunch = await checkWineBeforeLaunch(
+      game,
+      gameSettings,
+      logWriter
+    )
 
     if (!isWineOkToLaunch) {
       logError(
@@ -182,13 +199,54 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
         status: 'done'
       })
 
-      stopLogger(appName)
+      await logWriter.close()
 
       return { status: 'error' }
     }
   }
 
-  await runBeforeLaunchScript(game, gameSettings)
+  const isPreCacheDisabled = await shouldToggleShaderPreCacheOn(gameSettings)
+
+  if (isPreCacheDisabled) {
+    const { response } = await dialog.showMessageBox({
+      type: 'warning',
+      title: i18next.t(
+        'box.shaderPreCachingDisabledTitle',
+        'Shader Pre-Caching Disabled'
+      ),
+      message: i18next.t(
+        'box.shaderPreCachingDisabledMessage',
+        "Steam's Shader Pre-cache is disabled. Please enable it on the Steam Settings in Desktop Mode to ensure the game works properly with UMU."
+      ),
+      buttons: [
+        i18next.t('box.launchAnyway', 'Launch Game Anyway'),
+        i18next.t('button.cancel', 'Cancel')
+      ],
+      cancelId: 1,
+      defaultId: 0
+    })
+
+    if (response === 1) {
+      sendGameStatusUpdate({
+        appName,
+        runner,
+        status: 'done'
+      })
+      logInfo(
+        `User aborted the launch of ${title} because Shader Pre-Caching is disabled`,
+        LogPrefix.Backend
+      )
+      await logWriter.close()
+      return { status: 'abort' }
+    }
+
+    logWarning(
+      `User launched ${title} with Shader Pre-Caching disabled. Issues might occur.`,
+      LogPrefix.Backend
+    )
+  }
+
+  await runBeforeLaunchScript(game, gameSettings, logWriter)
 
   sendGameStatusUpdate({
     appName,
@@ -198,6 +256,7 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
 
   const command = gameManagerMap[runner].launch(
     appName,
+    logWriter,
     launchArguments,
     args,
     skipVersionCheck
@@ -209,18 +268,18 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
   }
 
   const launchResult = await command
-    .catch((exception) => {
+    .catch(async (exception) => {
       logError(exception, LogPrefix.Backend)
-      appendGamePlayLog(
-        game,
-        `An exception occurred when launching the game:\n${exception.stack}`
-      )
+      await logWriter.logError([
+        `An exception occurred when launching the game:`
+      ])
+      await logWriter.logError(exception)
 
       return false
     })
     .finally(async () => {
-      await runAfterLaunchScript(game, gameSettings)
-      stopLogger(appName)
+      await runAfterLaunchScript(game, gameSettings, logWriter)
+      await logWriter.close()
     })
 
   if (runner === 'gog') {
@@ -300,8 +359,160 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
   return { status: launchResult ? 'done' : 'error' }
 }
 
+async function shouldToggleShaderPreCacheOn(
+  gameSettings: GameSettings
+): Promise<boolean> {
+  const info = await getSystemInfo()
+  if (!info) return false
+  if (!info.steamDeckInfo.isDeck) return false
+  if (info.steamDeckInfo.mode !== 'game') return false
+  if (!(await isUmuSupported(gameSettings))) return false
+
+  // check if all of the following env variables are undefined
+  return [
+    'STEAM_COMPAT_TRANSCODED_MEDIA_PATH',
+    'STEAM_COMPAT_MEDIA_PATH',
+    'STEAM_FOSSILIZE_DUMP_PATH',
+    'DXVK_STATE_CACHE_PATH'
+  ].every((envVar) => !process.env[envVar])
+}
+
+function filterGameSettingsForLog(
+  originalSettings: GameSettings,
+  notNative: boolean
+): PartialDeep<GameSettings> {
+  const gameSettings: PartialDeep<GameSettings> =
+    structuredClone(originalSettings)
+  // remove gamescope settings if it's disabled
+  if (gameSettings.gamescope) {
+    if (!gameSettings.gamescope.enableLimiter) {
+      delete gameSettings.gamescope.fpsLimiter
+      delete gameSettings.gamescope.fpsLimiterNoFocus
+    }
+    if (!gameSettings.gamescope.enableUpscaling) {
+      delete gameSettings.gamescope.upscaleMethod
+      delete gameSettings.gamescope.upscaleHeight
+      delete gameSettings.gamescope.upscaleWidth
+      delete gameSettings.gamescope.gameHeight
+      delete gameSettings.gamescope.gameWidth
+      delete gameSettings.gamescope.windowType
+    }
+  }
+
+  // remove settings that are not used on Linux
+  if (isLinux) {
+    delete gameSettings.enableMsync
+    delete gameSettings.wineCrossoverBottle
+
+    if (notNative) {
+      const wineVersion = gameSettings.wineVersion
+      if (wineVersion) {
+        if (wineVersion.type === 'proton') {
+          delete gameSettings.autoInstallDxvk
+          delete gameSettings.autoInstallVkd3d
+        }
+      }
+
+      if (isSteamDeck) {
+        delete gameSettings.autoInstallDxvkNvapi
+      }
+    } else {
+      // remove settings that are not used on native Linux games
+      delete gameSettings.wineVersion
+      delete gameSettings.winePrefix
+      delete gameSettings.autoInstallDxvk
+      delete gameSettings.autoInstallDxvkNvapi
+      delete gameSettings.autoInstallVkd3d
+      delete gameSettings.enableFsync
+      delete gameSettings.enableEsync
+      delete gameSettings.enableFSR
+      delete gameSettings.enableWineWayland
+      delete gameSettings.enableHDR
+      delete gameSettings.showFps
+      delete gameSettings.enableDXVKFpsLimit
+      delete gameSettings.eacRuntime
+      delete gameSettings.battlEyeRuntime
+      delete gameSettings.useGameMode
+    }
+  }
+
+  // remove settings that are not used on Mac
+  if (isMac) {
+    delete gameSettings.useGameMode
+    delete gameSettings.gamescope
+    delete gameSettings.nvidiaPrime
+    delete gameSettings.battlEyeRuntime
+    delete gameSettings.eacRuntime
+    delete gameSettings.enableFSR
+    delete gameSettings.enableWineWayland
+    delete gameSettings.enableHDR
+    delete gameSettings.showMangohud
+    delete gameSettings.showFps
+    delete gameSettings.disableUMU
+
+    if (notNative) {
+      const wineType = gameSettings.wineVersion
+      if (wineType) {
+        if (wineType.type === 'wine') {
+          delete gameSettings.wineCrossoverBottle
+        }
+
+        if (wineType.type === 'toolkit') {
+          delete gameSettings.autoInstallDxvk
+          delete gameSettings.autoInstallDxvkNvapi
+          delete gameSettings.autoInstallVkd3d
+          delete gameSettings.wineCrossoverBottle
+        }
+
+        if (wineType.type === 'crossover') {
+          delete gameSettings.autoInstallDxvk
+          delete gameSettings.autoInstallDxvkNvapi
+          delete gameSettings.autoInstallVkd3d
+          delete gameSettings.winePrefix
+        }
+      }
+    } else {
+      // remove settings that are not used on native Mac games
+      delete gameSettings.enableDXVKFpsLimit
+      delete gameSettings.wineVersion
+      delete gameSettings.winePrefix
+      delete gameSettings.wineCrossoverBottle
+    }
+  }
+
+  // remove settings that are not used on Windows
+  if (isWindows) {
+    delete gameSettings.enableMsync
+    delete gameSettings.enableFSR
+    delete gameSettings.enableEsync
+    delete gameSettings.enableFsync
+    delete gameSettings.enableWineWayland
+    delete gameSettings.enableHDR
+    delete gameSettings.enableDXVKFpsLimit
+    delete gameSettings.DXVKFpsCap
+    delete gameSettings.autoInstallDxvk
+    delete gameSettings.autoInstallDxvkNvapi
+    delete gameSettings.autoInstallVkd3d
+    delete gameSettings.gamescope
+    delete gameSettings.useGameMode
+    delete gameSettings.showMangohud
+    delete gameSettings.showFps
+    delete gameSettings.preferSystemLibs
+    delete gameSettings.wineCrossoverBottle
+    delete gameSettings.winePrefix
+    delete gameSettings.wineVersion
+    delete gameSettings.battlEyeRuntime
+    delete gameSettings.eacRuntime
+    delete gameSettings.nvidiaPrime
+    delete gameSettings.disableUMU
+  }
+
+  return gameSettings
+}
+
 async function prepareLaunch(
   gameSettings: GameSettings,
+  logWriter: LogWriter,
   gameInfo: GameInfo,
   isNative: boolean
 ): Promise<LaunchPreperationResult> {
@@ -315,7 +526,7 @@ async function prepareLaunch(
 
   // Check if the game needs an internet connection
   if (!gameInfo.canRunOffline && offlineMode) {
-    logWarning(
+    logWriter.logWarning(
       'Offline Mode is on but the game does not allow offline mode explicitly.'
     )
   }
@@ -325,6 +536,51 @@ async function prepareLaunch(
   if (globalSettings.discordRPC) {
     rpcClient = constructAndUpdateRPC(gameInfo)
   }
+
+  const installPath =
+    gameInfo.runner === 'sideload'
+      ? gameInfo.folder_name
+      : gameInfo.install.install_path
+  await logWriter.logInfo([
+    'Launching',
+    `"${gameInfo.title}" (${gameInfo.runner})`
+  ])
+  const native = gameManagerMap[gameInfo.runner].isNative(gameInfo.app_name)
+  await logWriter.logInfo(['Native?', native])
+  await logWriter.logInfo(['Installed in:', installPath, '\n\n'])
+
+  await logWriter.logInfo([
+    'System Info:',
+    getSystemInfo()
+      .then(formatSystemInfo)
+      .then((s) => `\n${s}\n\n`)
+  ])
+
+  await logWriter.logInfo([
+    'Game Settings:',
+    filterGameSettingsForLog(gameSettings, !native),
+    '\n\n'
+  ])
+
+  const acInfoPromise = gameAnticheatInfo(gameInfo.namespace)
+  logWriter.logInfo(
+    acInfoPromise.then((info) =>
+      info?.status ? `Anticheat Status: ${info.status}` : ''
+    )
+  )
+  logWriter.logInfo([
+    acInfoPromise.then((info) =>
+      info?.anticheats ? `Anticheats: ${info.anticheats}\n\n` : ''
+    )
+  ])
+
+  logWriter.logWarning(
+    shouldToggleShaderPreCacheOn(gameSettings).then((b) =>
+      b
+        ? "Steam's Shader Pre-Caching is disabled and umu is enabled. Steam's Shader Pre-cache is required by umu to work properly on the SteamDeck's Gaming mode.\n\n"
+        : ''
+    )
+  )
 
   // If we're not on Linux, we can return here
   if (!isLinux) {
@@ -338,10 +594,14 @@ async function prepareLaunch(
   if (gameSettings.showMangohud && !isSteamDeckGameMode) {
     const mangoHudBin = await searchForExecutableOnPath('mangohud')
     if (!mangoHudBin) {
+      let reason =
+        'Mangohud is enabled, but `mangohud` executable could not be found on $PATH'
+      if (isFlatpak) {
+        reason = `${reason}. Make sure to install Mangohud's flatpak package with runtime 24.08`
+      }
       return {
         success: false,
-        failureReason:
-          'Mangohud is enabled, but `mangohud` executable could not be found on $PATH'
+        failureReason: reason
       }
     }
 
@@ -366,9 +626,13 @@ async function prepareLaunch(
   ) {
     const gameScopeBin = await searchForExecutableOnPath('gamescope')
     if (!gameScopeBin) {
-      logWarning(
+      let warningMessage =
         'Gamescope is enabled, but `gamescope` executable could not be found on $PATH'
-      )
+      if (isFlatpak) {
+        warningMessage = `${warningMessage}. Make sure to install Gamescope's flatpak package with runtime 24.08`
+      }
+
+      logWarning(warningMessage)
     } else {
       // Gamescope does not provide a version option and they changed
       // cli options on version 3.12. So we do what lutris does.
@@ -551,7 +815,8 @@ async function getCrossoverBottleFolder(gameSettings: GameSettings) {
 
 async function prepareWineLaunch(
   runner: Runner,
-  appName: string
+  appName: string,
+  logWriter: LogWriter
 ): Promise<{
   success: boolean
   failureReason?: string
@@ -592,8 +857,18 @@ async function prepareWineLaunch(
         ),
         type: 'ERROR'
       })
-      return { success: false }
+      return {
+        success: false,
+        failureReason: `CrossOver bottle "${gameSettings.wineCrossoverBottle}" does not exist`
+      }
     }
+
+    logWriter.writeString(
+      Winetricks.listInstalled(runner, appName).then((installedPackages) => {
+        const packagesString = installedPackages.join(', ')
+        return `Winetricks packages: ${packagesString}`
+      })
+    )
   }
 
   await verifyWinePrefix(gameSettings)
@@ -612,6 +887,7 @@ async function prepareWineLaunch(
   if (prefixOrBottleFolder) {
     const appsNamesPath = join(prefixOrBottleFolder, 'installed_games')
     if (!existsSync(appsNamesPath)) {
+      mkdirSync(prefixOrBottleFolder, { recursive: true })
       writeFileSync(appsNamesPath, JSON.stringify([appName]), 'utf-8')
       hasUpdated = true
     } else {
@@ -856,7 +1132,7 @@ function setupWrapperEnvVars(wrapperEnv: WrapperEnv) {
 /**
  * Maps Wine-related settings to environment variables
  * @param gameSettings The GameSettings to get the environment variables for
- * @param gameId If Proton and the Steam Runtime are used, the SteamGameId variable will be set to `heroic-gameId`
+ * @param gameId If Proton and the Steam Runtime are used, the SteamGameId variable will be set to `heroic-gameId` if it's unset
  * @returns A Record that can be passed to execAsync/spawn
  */
 function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
@@ -865,7 +1141,7 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
   const ret: Record<string, string> = {}
 
   // Add WINEPREFIX / STEAM_COMPAT_DATA_PATH / CX_BOTTLE
-  const steamInstallPath = join(flatPakHome, '.steam', 'steam')
+  const steamInstallPath = join(flatpakHome, '.steam', 'steam')
   switch (wineVersion.type) {
     case 'wine': {
       ret.WINEPREFIX = winePrefix
@@ -931,6 +1207,19 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
   if (isLinux && !gameSettings.enableFsync && wineVersion.type === 'proton') {
     ret.PROTON_NO_FSYNC = '1'
   }
+  if (isLinux && gameSettings.enableWineWayland) {
+    if (wineVersion.type === 'proton') {
+      ret.PROTON_ENABLE_WAYLAND = '1'
+      if (gameSettings.enableHDR) {
+        ret.PROTON_ENABLE_HDR = '1'
+      }
+    } else {
+      ret.DISPLAY = ''
+      if (gameSettings.enableHDR) {
+        ret.DXVK_HDR = '1'
+      }
+    }
+  }
   if (wineVersion.type === 'proton') {
     if (gameSettings.autoInstallDxvkNvapi) {
       ret.PROTON_ENABLE_NVAPI = '1'
@@ -957,11 +1246,11 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
   }
   if (wineVersion.type === 'proton') {
     // If we don't set this, GE-Proton tries to guess the AppID from the prefix path, which doesn't work in our case
-    ret.STEAM_COMPAT_APP_ID = '0'
-    ret.SteamAppId = ret.STEAM_COMPAT_APP_ID
+    ret.STEAM_COMPAT_APP_ID = process.env.STEAM_COMPAT_APP_ID || '0'
+    ret.SteamAppId = process.env.SteamAppId || ret.STEAM_COMPAT_APP_ID
     // This sets the name of the log file given when setting PROTON_LOG=1
-    ret.SteamGameId = `heroic-${gameId}`
-    ret.PROTON_LOG_DIR = flatPakHome
+    ret.SteamGameId = process.env.SteamGameId || `heroic-${gameId}`
+    ret.PROTON_LOG_DIR = flatpakHome
     // add back default wine/dxvk debug logging
     if (gameSettings?.verboseLogs) {
       if (
@@ -1018,6 +1307,13 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
         ].join('\n')
       )
     }
+  }
+  if (
+    gameSettings.advertiseAvxForRosetta &&
+    isMac &&
+    wineVersion.type === 'toolkit'
+  ) {
+    ret.ROSETTA_ADVERTISE_AVX = '1'
   }
   return ret
 }
@@ -1245,26 +1541,23 @@ async function runWineCommand({
     child.stdout.setEncoding('utf-8')
     child.stderr.setEncoding('utf-8')
 
-    if (!logsDisabled) {
-      if (options?.logFile) {
-        logDebug(`Logging to file "${options?.logFile}"`, LogPrefix.Backend)
-      }
-
-      if (options?.logFile && existsSync(options.logFile)) {
-        appendFileLog(
-          options.logFile,
+    if (options?.logWriters) {
+      const files = options.logWriters
+        .map((writer) => `"${writer.logFilePath}"`)
+        .join(', ')
+      logDebug(`Logging to file(s) ${files}`, LogPrefix.Backend)
+      options.logWriters.forEach((writer) =>
+        writer.writeString(
           `Wine Command: ${bin} ${commandParts.join(' ')}\n\nGame Log:\n`
         )
-      }
+      )
     }
 
     const stdout = memoryLog()
     const stderr = memoryLog()
 
     child.stdout.on('data', (data: string) => {
-      if (!logsDisabled && options?.logFile) {
-        appendFileLog(options.logFile, data)
-      }
+      options?.logWriters?.forEach((writer) => writer.writeString(data))
 
       if (options?.onOutput) {
         options.onOutput(data, child)
@@ -1274,9 +1567,7 @@ async function runWineCommand({
     })
 
     child.stderr.on('data', (data: string) => {
-      if (!logsDisabled && options?.logFile) {
-        appendFileLog(options.logFile, data)
-      }
+      options?.logWriters?.forEach((writer) => writer.writeString(data))
 
       if (options?.onOutput) {
         options.onOutput(data, child)
@@ -1321,7 +1612,7 @@ interface RunnerProps {
   dir: string
 }
 
-const commandsRunning = {}
+const commandsRunning: Record<string, Promise<ExecResult>> = {}
 
 let shouldUsePowerShell: boolean | null = null
 
@@ -1371,9 +1662,13 @@ function appNameFromCommandParts(commandParts: string[], runner: Runner) {
 async function callRunner(
   commandParts: string[],
   runner: RunnerProps,
-  options?: CallRunnerOptions
+  options: CallRunnerOptions
 ): Promise<ExecResult> {
   const appName = appNameFromCommandParts(commandParts, runner.name)
+
+  // Automatically add the relevant LogWriter for the runner
+  options.logWriters ??= []
+  options.logWriters.push(getRunnerLogWriter(runner.name))
 
   // Necessary to get rid of possible undefined or null entries, else
   // TypeError is triggered
@@ -1415,30 +1710,21 @@ async function callRunner(
     fullRunnerPath
   )
 
-  if (!logsDisabled) {
-    logInfo(
-      [(options?.logMessagePrefix ?? `Running command`) + ':', safeCommand],
-      runner.logPrefix
-    )
+  const prefix = `${options.logMessagePrefix ?? 'Running command'}:`
+  logInfo([prefix, safeCommand], runner.logPrefix)
 
-    if (options?.logFile) {
-      logDebug(`Logging to file "${options?.logFile}"`, runner.logPrefix)
-    }
-
-    if (options?.verboseLogFile) {
-      appendRunnerLog(
-        runner.name,
-        `[${new Date().toLocaleString()}] ${safeCommand}\n`
+  if (options?.logWriters) {
+    for (const writer of options.logWriters) {
+      await writer.logInfo(
+        [prefix, safeCommand, '\n\n'].filter(Boolean).join(' ')
       )
+      await writer.logInfo('Game Output:')
     }
 
-    if (options?.logFile) {
-      if (appName) {
-        initGameLog(appName)
-      } else {
-        initFileLog(options.logFile)
-      }
-    }
+    const files = options.logWriters
+      .map((writer) => `"${writer.logFilePath}"`)
+      .join(', ')
+    logDebug(`Logging to file(s) ${files}`, runner.logPrefix)
   }
 
   // check if the same command is currently running
@@ -1446,7 +1732,7 @@ async function callRunner(
   const key = [runner.name, commandParts].join(' ')
   const currentPromise = commandsRunning[key]
 
-  if (currentPromise) {
+  if (key in commandsRunning) {
     return currentPromise
   }
 
@@ -1469,19 +1755,7 @@ async function callRunner(
         ? options.logSanitizer(data)
         : data
 
-      if (!logsDisabled) {
-        if (options?.logFile) {
-          if (appName) {
-            appendGameLog(appName, stringToLog)
-          } else {
-            appendFileLog(options.logFile, stringToLog)
-          }
-        }
-
-        if (options?.verboseLogFile) {
-          appendRunnerLog(runner.name, stringToLog)
-        }
-      }
+      options?.logWriters?.forEach((writer) => writer.writeString(stringToLog))
 
       if (options?.onOutput) {
         options.onOutput(data, child)
@@ -1496,19 +1770,7 @@ async function callRunner(
         ? options.logSanitizer(data)
         : data
 
-      if (!logsDisabled) {
-        if (options?.logFile) {
-          if (appName) {
-            appendGameLog(appName, stringToLog)
-          } else {
-            appendFileLog(options.logFile, stringToLog)
-          }
-        }
-
-        if (options?.verboseLogFile) {
-          appendRunnerLog(runner.name, stringToLog)
-        }
-      }
+      options?.logWriters?.forEach((writer) => writer.writeString(stringToLog))
 
       if (options?.onOutput) {
         options.onOutput(data, child)
@@ -1520,7 +1782,6 @@ async function callRunner(
     child.on('close', (code, signal) => {
       errorHandler({
         error: `${stdout.join().concat(stderr.join())}`,
-        logPath: options?.logFile,
         runner: runner.name,
         appName
       })
@@ -1530,7 +1791,7 @@ async function callRunner(
       }
 
       res({
-        stdout: stdout.join('\n'),
+        stdout: stdout.join(),
         stderr: stderr.join('\n')
       })
     })
@@ -1558,19 +1819,14 @@ async function callRunner(
 
       errorHandler({
         error: `${error}`,
-        logPath: options?.logFile,
         runner: runner.name,
         appName
       })
 
-      const showDialog =
-        !`${error}`.includes('signal') &&
-        !`${error}`.includes('appears to be deleted')
-
-      logError(['Error running', 'command', `"${safeCommand}":`, error], {
-        prefix: runner.logPrefix,
-        showDialog
-      })
+      logError(
+        ['Error running', 'command', `"${safeCommand}":`, error],
+        runner.logPrefix
+      )
 
       return { stdout: '', stderr: `${error}`, fullCommand: safeCommand, error }
     })
@@ -1681,33 +1937,33 @@ async function getWinePath({
 
 async function runBeforeLaunchScript(
   gameInfo: GameInfo,
-  gameSettings: GameSettings
+  gameSettings: GameSettings,
+  logWriter: LogWriter
 ) {
   if (!gameSettings.beforeLaunchScriptPath) {
     return true
   }
 
-  appendGamePlayLog(
-    gameInfo,
+  await logWriter.writeString(
     `Running script before ${gameInfo.title} (${gameSettings.beforeLaunchScriptPath})\n`
   )
 
-  return runScriptForGame(gameInfo, gameSettings, 'before')
+  return runScriptForGame(gameInfo, gameSettings, 'before', logWriter)
 }
 
 async function runAfterLaunchScript(
   gameInfo: GameInfo,
-  gameSettings: GameSettings
+  gameSettings: GameSettings,
+  logWriter: LogWriter
 ) {
   if (!gameSettings.afterLaunchScriptPath) {
     return true
   }
 
-  appendGamePlayLog(
-    gameInfo,
+  await logWriter.writeString(
     `Running script after ${gameInfo.title} (${gameSettings.afterLaunchScriptPath})\n`
   )
-  return runScriptForGame(gameInfo, gameSettings, 'after')
+  return runScriptForGame(gameInfo, gameSettings, 'after', logWriter)
 }
 
 /* Execute script before launch/after exit, wait until the script
@@ -1735,7 +1991,8 @@ async function runAfterLaunchScript(
 async function runScriptForGame(
   gameInfo: GameInfo,
   gameSettings: GameSettings,
-  scriptStage: 'before' | 'after'
+  scriptStage: 'before' | 'after',
+  logWriter: LogWriter
 ): Promise<boolean | string> {
   return new Promise((resolve, reject) => {
     const scriptPath = gameSettings[`${scriptStage}LaunchScriptPath`]
@@ -1752,21 +2009,22 @@ async function runScriptForGame(
       cwd: gameInfo.install.install_path,
       env: scriptEnv
     })
+    child.stdout.setEncoding('utf-8')
+    child.stderr.setEncoding('utf-8')
 
     if (gameSettings.verboseLogs) {
-      child.stdout.on('data', (data) => {
-        appendGamePlayLog(gameInfo, data.toString())
+      child.stdout.on('data', (data: string) => {
+        logWriter.writeString(data)
       })
 
-      child.stderr.on('data', (data) => {
-        appendGamePlayLog(gameInfo, data.toString())
+      child.stderr.on('data', (data: string) => {
+        logWriter.writeString(data)
       })
     }
 
     child.on('error', (err: Error) => {
       if (gameSettings.verboseLogs) {
-        appendGamePlayLog(gameInfo, err.message)
-        if (err.stack) appendGamePlayLog(gameInfo, err.stack)
+        logWriter.logError(err)
       }
       reject(err.message)
     })
@@ -1787,7 +2045,6 @@ export {
   setupWrappers,
   runWineCommand,
   callRunner,
-  getRunnerCallWithoutCredentials,
   getWinePath,
   launchEventCallback,
   getKnownFixesEnvVariables

@@ -347,7 +347,8 @@
         "button": {
             "close": "Zatvoriť Pomocník",
             "open": "Otvoriť Pomocník"
-        }
+        },
+        "dxfpslimit": "Sets a frame rate cap for DXVK games"
     },
     "info": {
         "heroic": {
@@ -964,5 +965,8 @@
     },
     "emptyLibrary": {
         "noResults": "Tieto filtre nemajú žiadne výsledky."
+    },
+    "tour": {
+        "back": "Back"
     }
 }

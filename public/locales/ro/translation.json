@@ -5,7 +5,9 @@
         "content_font_family_no_default": "Content Font Family (Default: ",
         "fonts": "Fonturi",
         "title": "Accesibilitate",
-        "zoom": "Zoom"
+        "zoom": "Zoom",
+        "actions_font_family_default": "Actions Font Family (Default:",
+        "content_font_family_default": "Content Font Family (Default:"
     },
     "add_game": "Add Game",
     "All": "Toate",
@@ -293,7 +295,8 @@
             "settings": "Setări",
             "downloadManager": "Download Manager",
             "library": "Bibliotecă"
-        }
+        },
+        "dxfpslimit": "Sets a frame rate cap for DXVK games"
     },
     "info": {
         "heroic": {
@@ -738,5 +741,8 @@
     },
     "window": {
         "close": "Închide"
+    },
+    "tour": {
+        "back": "Negru"
     }
 }

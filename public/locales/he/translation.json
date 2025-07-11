@@ -419,7 +419,12 @@
         "experimental_features": {
             "enableNewShinyFeature": "תכונה מבריקה חדשה"
         },
-        "msync": "הפעל Esync"
+        "msync": "הפעל Esync",
+        "frameless-window": {
+            "confirmation": {
+                "title": "תכונות ניסיוניות"
+            }
+        }
     },
     "status": {
         "processing": "מעבד קבצים, נא לחכות",
@@ -433,7 +438,9 @@
         "zoom": "זום",
         "all_tiles_in_color": "הצג את כל אריחי המשחק בצבע",
         "fonts": "גופנים",
-        "title": "נגישות"
+        "title": "נגישות",
+        "actions_font_family_default": "משפחת גופני פעולות (ברירת מחדל:",
+        "content_font_family_default": "משפחת גופני תוכן (ברירת מחדל:"
     },
     "docs": "תיעוד",
     "epic": {
@@ -516,7 +523,8 @@
             "wineManager": "מנהל גרסאות Wine",
             "library": "ספריה"
         },
-        "msync": "מטרת Fsync היא להפחית את השימוש במעבד של winesever במשחקים הקשים על המעבד. הדלקה יכולה לשפר את הביצועים על הקרנלים של לינוקס הנתמכים."
+        "msync": "מטרת Fsync היא להפחית את השימוש במעבד של winesever במשחקים הקשים על המעבד. הדלקה יכולה לשפר את הביצועים על הקרנלים של לינוקס הנתמכים.",
+        "dxfpslimit": "קובע את גבול קצב הפריימים עבור משחקי DXVK"
     },
     "Library": "ספריה",
     "message": {
@@ -703,7 +711,8 @@
         "may_not_work": "זה עלול לא לעבוד בשל חוסר תמיכה באנטיציט.",
         "reference": "רפרנס",
         "source": "מקור",
-        "title": "המשחק הזה כולל תוכנת אנטיציט"
+        "title": "המשחק הזה כולל תוכנת אנטיציט",
+        "multiplayer_may_not_work": "זה עלול לא לעבוד בשל חוסר תמיכה באנטיציט."
     },
     "error": "שגיאה",
     "globalSettings": "הגדרות גלובליות",
@@ -754,5 +763,8 @@
     },
     "window": {
         "close": "לסגור"
+    },
+    "tour": {
+        "back": "חזור"
     }
 }

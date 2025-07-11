@@ -21,7 +21,8 @@
             "title": "Çalıştırmak için EXE dosyası seçin"
         },
         "select": {
-            "button": "Seç"
+            "button": "Seç",
+            "image": "Resim Seç"
         },
         "sideload": {
             "exe": "Yürütülebilir Dosyayı Seçin"
@@ -47,7 +48,8 @@
         },
         "wineprefix": "WinePrefix Klasörünü Seç",
         "yes": "EVET",
-        "close": "Kapat"
+        "close": "Kapat",
+        "select-install-path": "Steam Kurulum Yolunu Seç"
     },
     "button": {
         "add_to_favourites": "Favorilere Ekle",
@@ -74,7 +76,9 @@
         "uninstall": "Kaldır",
         "update": "Güncelle",
         "details": "Detaylar",
-        "changelog": "Değişiklik Günlüğünü Göster"
+        "changelog": "Değişiklik Günlüğünü Göster",
+        "browse_files": "Dosyalara Gözat",
+        "browse_wine_prefix": "Wine Ön Eki'ni Gözat"
     },
     "cloud_save_unsupported": "Desteklenmiyor",
     "disabled": "Devre dışı",
@@ -157,7 +161,7 @@
             "install_anyway": "Evet (çoklu oyuncu özelliklerinin çalışmayabileceğini anlıyorum)",
             "multiplayer_message": "Hile önleyici desteği hatalı veya red edildi. Oyun açılabilir fakat çoklu oyuncu özellikleri çalışmayabilir. Yinede yüklemek istiyor musun?",
             "ok": "Tamam",
-            "disabled_installation": "Antihile desteği arızalı ya da reddedildi ve çok oyunculu özellikler çalışmayacak. Oyunu yüklemek için bunu gelişmiş ayarlardan kapatmanız gerek."
+            "disabled_installation": "Bu oyun, işletim sisteminizle uyumlu olmayan veya geliştiriciler tarafından desteklenmeyen bir hile karşıtı yazılım kullanıyor. Bu nedenle çok oyunculu özellikler çalışmayacak ve ne siz ne de Heroic ekibi bu durumu değiştiremez.<br /><br />Yine de oyunu kurmayı denemek isterseniz, Ayarlar > Gelişmiş bölümüne giderek “bozuk veya desteklenmeyen anticheat'e sahip oyunların yüklenmesine izin ver” seçeneğini işaretleyin.<br /><br />Bu durumun bir çözümü olmadığını ve oyunda ban yeme riskiniz olduğunu unutmayın."
         },
         "flatpak-path-not-writtable": "Hata: Bu yola sandbox erişimi verilmedi, veri kaybı yaşanacak."
     },
@@ -177,7 +181,30 @@
         "ubisoft": "Ubisoft Connect Yükleniyor",
         "winetricks": "Winetricks Paketleri Kuruluyor",
         "prerequisites": "Gereksinimler Kuruluyor",
-        "redist": "Dağıtılabilirler Kuruluyor"
+        "redist": "Dağıtılabilirler Kuruluyor",
+        "steam": {
+            "installing": "Kuruluyor",
+            "pleaseWait": "Please wait...",
+            "cancel": "Kurulumu İptal Et",
+            "abort": "Kurulumu Sonlandır",
+            "compatibility": "Her oyunun sorunsuz çalışmayabileceğini ve çalışsa bile beklenen şekilde davranmayabileceğini unutmayın.",
+            "compatibility-layer-not-available": "Uyumluluk katmanı mevcut değil. Lütfen önce “Ayarlar > Wine Yöneticisi” bölümünden bir tane yükleyin.",
+            "crossover": "Crossover yüklüyse buna gerek yok; çünkü normal Steam'i sorunsuz şekilde çalıştırabiliyor.",
+            "specificVersion-pt1": "Bu işlem, Steam’in belirli bir sürümünü şuradan indirecek:",
+            "downloading": "İndiriliyor: {{percent}}%",
+            "hardware": "Apple Silicon M1+ (Intel Mac'lerde Steam, Crossover ile çalışacaktır)",
+            "install": "Steam'i Yükle",
+            "install-path": "Steam Kurulum Yolu",
+            "installation": "Steam Kurulumu",
+            "launch": "Steam’i Heroic Uyumluluk Katmanını kullanarak başlat",
+            "launching": "Steam Başlatılıyor...",
+            "macOS": "macOS 14.0 ve sonrası",
+            "notification": "Kurulum tamamlandığında Heroic sizi bilgilendirecek.",
+            "patience": "Devam etmek istiyorsanız lütfen sabırlı olun, çünkü işlem internet bağlantınıza ve sistem yapılandırmanıza bağlı olarak birkaç dakika sürebilir.",
+            "ram": "8 GB RAM",
+            "recommended": "Daha iyi bir deneyim için önerilen sistem gereksinimleri",
+            "select-path": "Steam için kurulum klasörünü seçin"
+        }
     },
     "launch": {
         "options": "Başlatma Seçenekleri..."
@@ -294,5 +321,14 @@
         "header": "Oyun üçüncü parti bir uygulama tarafından yönetiliyor",
         "notice1": "Bu oyun üçüncü parti {{application_name}} uygulaması tarafından yönetiliyor",
         "notice2": "Kur'a bastıktan sonra, Heroic kurulum işlemini bitirmek için uygulamayı çalıştıracak"
+    },
+    "Open": "Epic Store'u",
+    "queue": {
+        "label": {
+            "canceled": "Canceled",
+            "remove": "Remove from Downloads",
+            "pause": "İndirmeyi durdur",
+            "resume": "İndirmeye devam et"
+        }
     }
 }

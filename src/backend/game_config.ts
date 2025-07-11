@@ -2,17 +2,16 @@ import { existsSync, readFileSync, writeFileSync } from 'graceful-fs'
 
 import { GameConfigVersion, GameSettings } from 'common/types'
 import { GlobalConfig } from './config'
-import {
-  currentGameConfigVersion,
-  configPath,
-  gamesConfigPath,
-  isMac,
-  isWindows,
-  userHome,
-  defaultWinePrefix
-} from './constants'
-import { logError, logInfo, LogPrefix } from './logger/logger'
+import { logError, logInfo, LogPrefix } from 'backend/logger'
 import { join } from 'path'
+import { currentGameConfigVersion } from 'backend/constants/others'
+import { isMac, isWindows } from './constants/environment'
+import {
+  configPath,
+  defaultWinePrefix,
+  gamesConfigPath,
+  userHome
+} from './constants/paths'
 
 /**
  * This class does config handling for games.
@@ -215,6 +214,8 @@ class GameConfigV0 extends GameConfig {
       enableFSR,
       enableMsync,
       enableFsync,
+      enableWineWayland,
+      enableHDR,
       maxSharpness,
       launcherArgs,
       nvidiaPrime,
@@ -235,7 +236,8 @@ class GameConfigV0 extends GameConfig {
       beforeLaunchScriptPath,
       afterLaunchScriptPath,
       gamescope,
-      verboseLogs
+      verboseLogs,
+      advertiseAvxForRosetta
     } = GlobalConfig.get().getSettings()
 
     // initialize generic defaults
@@ -250,6 +252,8 @@ class GameConfigV0 extends GameConfig {
       enableMsync,
       enableFSR,
       enableFsync,
+      enableWineWayland,
+      enableHDR,
       maxSharpness,
       launcherArgs,
       nvidiaPrime,
@@ -268,7 +272,8 @@ class GameConfigV0 extends GameConfig {
       beforeLaunchScriptPath,
       afterLaunchScriptPath,
       gamescope,
-      verboseLogs
+      verboseLogs,
+      advertiseAvxForRosetta
     } as GameSettings
 
     let gameSettings = {} as GameSettings
@@ -306,8 +311,8 @@ class GameConfigV0 extends GameConfig {
     }
   }
 
-  public setSetting(key: string, value: unknown) {
-    this.config[key] = value
+  public setSetting(key: keyof GameSettings, value: unknown) {
+    this.config[key] = value as never
     logInfo(`${this.appName}: Setting ${key} to ${JSON.stringify(value)}`)
     return this.flush()
   }

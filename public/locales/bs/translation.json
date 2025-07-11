@@ -5,7 +5,9 @@
         "content_font_family_no_default": "Content Font Family (Default: ",
         "fonts": "Fontovi",
         "title": "Pristupačnost",
-        "zoom": "Povećanje"
+        "zoom": "Povećanje",
+        "actions_font_family_default": "Actions Font Family (Default:",
+        "content_font_family_default": "Content Font Family (Default:"
     },
     "add_game": "Add Game",
     "All": "Sve",
@@ -293,7 +295,8 @@
             "downloadManager": "Download Manager",
             "wineManager": "Wine menadžer",
             "library": "Biblioteka"
-        }
+        },
+        "dxfpslimit": "Sets a frame rate cap for DXVK games"
     },
     "info": {
         "heroic": {
@@ -646,6 +649,9 @@
             "clearCache": {
                 "help9": "Game Settings"
             }
+        },
+        "systemInformation": {
+            "copyToClipboard": "Kopirano u međuspremnik!"
         }
     },
     "Settings": "Postavke",

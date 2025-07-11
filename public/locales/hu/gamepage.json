@@ -21,7 +21,8 @@
             "title": "Válassza ki a futtatandó EXE-fájlt"
         },
         "select": {
-            "button": "Kiválasztás"
+            "button": "Kiválasztás",
+            "image": "Kép kiválasztása"
         },
         "sideload": {
             "exe": "Indítófájl kiválasztása"
@@ -47,7 +48,8 @@
         },
         "wineprefix": "Wine előtagmappa kiválasztása",
         "yes": "IGEN",
-        "close": "Bezárás"
+        "close": "Bezárás",
+        "select-install-path": "Steam telepítési útvonalának kiválasztása"
     },
     "button": {
         "add_to_favourites": "Hozzáadás a kedvencekhez",
@@ -74,7 +76,9 @@
         "uninstall": "Eltávolítás",
         "update": "Frissítés",
         "details": "Részletek",
-        "changelog": "Változásnapló megjelenítése"
+        "changelog": "Változásnapló megjelenítése",
+        "browse_files": "Fájlok tallózása",
+        "browse_wine_prefix": "Wine előtag tallózása"
     },
     "cloud_save_unsupported": "Nem támogatott",
     "disabled": "Letiltva",
@@ -157,7 +161,7 @@
             "ok": "Ok",
             "install_anyway": "Igen (Megértettem, hogy a többjátékos funkciók nem fognak működni)",
             "multiplayer_message": "A csalás elleni szoftver támogatása hibás vagy tiltásra került. A játékot lehet, hogy meg lehet nyitni, de a többjátékos funkciók nem fognak működni. Mindenképp telepíti?",
-            "disabled_installation": "A csalás elleni szoftver támogatása hibás, vagy tiltásra került, és a többjátékos funkciók nem fognak működni. A játék nem telepíthető. A játék telepítéséhez tiltsa le ezt az ellenőrzést a speciális beállításokban."
+            "disabled_installation": "A játék olyan csalás elleni szoftvert használ, amely nem kompatibilis az operációs rendszerével, vagy a támogatást a játék fejlesztői nem engedélyezték. Ez azt jelenti, hogy a többjátékos funkciók nem fognak működni, és ez ellen semmit sem tehet (ahogy a Heroic csapata sem).<br /><br />A játék telepítéséhez, és hogy mégis megpróbálja, kattintson a Beállítások, Speciális menüpontra, és kapcsolja be a hibás vagy letiltott csalás elleni szoftverrel rendelkező játékok telepítésének engedélyezését.<br /><br />Vegye figyelembe, hogy erre nincs megoldás, és azt kockáztatja, hogy kitiltják a játékból."
         },
         "flatpak-path-not-writtable": "Hiba: nem lett hozzáférés adva a homokozóhoz ennél az elérési útnál, adatvesztés fog történni."
     },
@@ -176,7 +180,33 @@
         "launching": "Indítás…",
         "ubisoft": "A Ubisoft Connect telepítése",
         "winetricks": "Winetricks csomagok telepítése",
-        "redist": "Terjeszthető csomagok telepítése"
+        "redist": "Terjeszthető csomagok telepítése",
+        "steam": {
+            "pleaseWait": "Kis türelmet…",
+            "installing": "Telepítés…",
+            "compatibility-layer-not-available": "Nem érhető el kompatibilitási réteg. Először telepítsen egyet a „Beállítások > Wine kezelő” oldalról.",
+            "crossover": "Ha a Crossover telepítve van, akkor erre nincs szükség, mert működni fog a normál Steam.",
+            "hardware": "Apple Silicon M1+ (az inteles Macre készült Steam nem fog működni a Crossoverrel)",
+            "install": "Steam telepítése",
+            "install-path": "A Steam telepítési útvonala",
+            "install-tooltip": "Ez telepíti a Steam windowsos verzióját, és a Heroic kompatibilitási rétegével lesz futtatva. \n\n    Egyes játékok, különösen régebbi címek, újabb 3D-s játékok, vagy a csalás elleni szoftvert használók, lehet hogy nem fognak megfelelően működni. \n\n    ",
+            "installation": "A Steam telepítése",
+            "patience": "Ha folytatná, akkor legyen türelemmel, mert az internetkapcsolatától és a rendszer beállításaitól függően ez percekig is eltarthat.",
+            "specificVersion-pt2": "archive.org-ról,",
+            "specificVersion-pt3": "amely a Heroicon keresztül működik, mert a Steam új verziói nem fognak működni macOS-en.",
+            "abort": "Telepítés megszakítása",
+            "cancel": "Telepítés megszakítása",
+            "compatibility": "Vegye figyelembe, hogy nem minden játék fog működni, és ha működik is, nem biztos hogy a várt módon.",
+            "downloading": "Letöltés: {{percent}}%",
+            "launch": "A Steam indítása a Heroic kompatibilitási réteggel",
+            "launching": "A Steam indítása…",
+            "macOS": "macOS 14.0 vagy újabb",
+            "notification": "A Heroic értesíteni fogja, ha a telepítés elkészült.",
+            "ram": "8GB RAM",
+            "recommended": "A jobb élmény érdekében javasolt specifikációk",
+            "select-path": "A Steam telepítési mappájának kiválasztása",
+            "specificVersion-pt1": "Ez letölti a Steam egy olyan verzióját az"
+        }
     },
     "launch": {
         "options": "Indítási kapcsolók…"
@@ -211,13 +241,13 @@
             "useragent": "Egyéni felhasználói ügynök"
         },
         "placeholder": {
-            "image": "Ide illessze be a kép webcímét",
+            "image": "Ide illessze be a kép webcímét, vagy válasszon egyet a számítógépéről",
             "title": "Adjon címet a játékának/alkalmazásának",
             "url": "Ide illessze be a játék webcímét",
             "useragent": "Írjon ide egy egyéni felhasználói ügynököt, melyet ehhez a böngészős alkalmazáshoz/játékhoz használna"
         },
         "import-hint": {
-            "title": "Fontos! Egy játékot adsz hozzá éppen Epic/GOG/Amazon-ról? Kattints ide!",
+            "title": "Fontos! Épp egy játékot ad hozzá az Epicről/GOG-ról/Amazonról? Kattintson ide!",
             "content": "NE használja erre ezt a funkciót.<br />Helyette <3>jelentkezzen be</3> az áruházba, keresse meg a játékot a könyvtárában, nyissa meg a telepítési párbeszédablakot, és kattintson a „Játék importálása” gombra."
         }
     },
@@ -252,7 +282,8 @@
         "gog-goodie": "Úgy tűnik, hogy ez a játék nem telepíthető. Ellenőrizze a letölthető tartalmat a https://gog.com/account oldalon.",
         "goodie": "Nem telepíthető",
         "winetricks": "Winetricks javítások alkalmazása",
-        "redist": "Terjeszhető csomagok telepítése ({{redist}})"
+        "redist": "Terjeszhető csomagok telepítése ({{redist}})",
+        "importing": "Importálás"
     },
     "submenu": {
         "addShortcut": "Parancsikon hozzáadása",
@@ -293,5 +324,15 @@
         "header": "Ezt a játékot egy külső alkalmazás kezeli",
         "notice1": "Ezt a játékot egy külső alkalmazás kezeli: „{{application_name}}”",
         "notice2": "A Telepítés gombra való kattintás után a Heroic futtatni fogja az alkalmazást, hogy befejezze a telepítési folyamatot"
-    }
+    },
+    "Open": "Megnyitás",
+    "queue": {
+        "label": {
+            "canceled": "Megszakítva",
+            "remove": "Eltávolítás a letöltések közül",
+            "pause": "Letöltés szüneteltetése",
+            "resume": "Letöltés folytatása"
+        }
+    },
+    "wikiLink": "Fontos információ erről a játékról, olvassa el ezt:&nbsp;<1>Oldal megnyitása</1>"
 }

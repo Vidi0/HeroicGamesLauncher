@@ -7,7 +7,9 @@
         "title": "Aksesibilitas",
         "zoom": "Perbesar",
         "disable_dialog_backdrop_close": "Nonaktifkan dialog penutup dengan mengeklik bagian luar",
-        "titles_always_visible": "Selalu tampilkan judul di perpustakaan"
+        "titles_always_visible": "Selalu tampilkan judul di perpustakaan",
+        "actions_font_family_default": "Kelompok Font Tindakan (Default:",
+        "content_font_family_default": "Keluarga Font Konten (Default:"
     },
     "add_game": "Tambahkan Gim",
     "All": "Semua",
@@ -312,7 +314,8 @@
             "wineManager": "Manajer Wine",
             "library": "Pustaka"
         },
-        "msync": "Fsync bertujuan untuk mengurangi overhead server Wine di gim dengan CPU intensif. Mengaktifkannya dapat meningkatkan kinerja pada kernel Linux yang didukung."
+        "msync": "Fsync bertujuan untuk mengurangi overhead server Wine di gim dengan CPU intensif. Mengaktifkannya dapat meningkatkan kinerja pada kernel Linux yang didukung.",
+        "dxfpslimit": "Atur batas maksimal frame untuk gim DXVK"
     },
     "info": {
         "heroic": {
@@ -629,7 +632,10 @@
             "enableNewDesign": "Desain baru"
         },
         "frameless-window": {
-            "description": "Gunakan frameless window (perlu restart)"
+            "description": "Gunakan frameless window (perlu restart)",
+            "confirmation": {
+                "title": "Fitur Eksperimental"
+            }
         },
         "msync": "Aktifkan Esync"
     },
@@ -688,6 +694,9 @@
             "resetHeroic": {
                 "help": "Anda yakin ingin menyetel ulang Heroic? Ini akan menghapus semua Pengaturan dan Tembolok tetapi tidak akan menghapus gim yang Terinstal atau kredensial Epic Anda. Versi portable (AppImage, WinPortable, ...) dari Heroic perlu dijalankan ulang secara manual setelah melakukan proses ini."
             }
+        },
+        "systemInformation": {
+            "copyToClipboard": "Disalin ke Papan Klip!"
         }
     },
     "Settings": "Pengaturan",
@@ -802,5 +811,8 @@
         "dont-show-again": "Jangan tampilkan peringatan ini lagi",
         "title": "Adtraction diblokir",
         "description": "Sepertinya domain track.adtraction.com gagal dimuat atau diblokir. Dengan adtraction, pembelian apa pun yang Anda lakukan di toko GOG akan mendukung Heroic secara finansial. Pertimbangkanlah untuk menghapus blokiran jika Anda ingin berkontribusi."
+    },
+    "tour": {
+        "back": "Kembali"
     }
 }

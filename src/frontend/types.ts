@@ -167,7 +167,9 @@ declare global {
       canvas_height: number
     ) => Promise<string>
     setTheme: (themeClass: string) => void
+    isSteamDeck: boolean
     isSteamDeckGameMode: boolean
+    isFlatpak: boolean
     platform: NodeJS.Platform
     setCustomCSS: (cssString: string) => void
   }
@@ -235,8 +237,15 @@ export interface LibraryContextType {
   setShowSupportOfflineOnly: (value: boolean) => void
   showThirdPartyManagedOnly: boolean
   setShowThirdPartyManagedOnly: (value: boolean) => void
+  showUpdatesOnly: boolean
+  setShowUpdatesOnly: (value: boolean) => void
   handleAddGameButtonClick: () => void
   setShowCategories: (value: boolean) => void
+  showAlphabetFilter: boolean
+  onToggleAlphabetFilter: () => void
+  alphabetFilterLetter: string | null
+  setAlphabetFilterLetter: (letter: string | null) => void
+  gamesForAlphabetFilter: GameInfo[]
 }
 
 export interface GameContextType {
@@ -248,6 +257,7 @@ export interface GameContextType {
   gameInstallInfo: InstallInfo | null
   is: {
     installing: boolean
+    importing: boolean
     installingWinetricksPackages: boolean
     installingRedist: boolean
     launching: boolean

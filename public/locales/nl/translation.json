@@ -8,7 +8,8 @@
         "zoom": "Zoom",
         "disable_dialog_backdrop_close": "Zet vensters sluiten bij het klikken buiten deze vensters uit",
         "titles_always_visible": "Laat altijd titels in mijn bibliotheek zien",
-        "actions_font_family_default": "Acties Lettertypefamilie (Standaard: {{fontFamily}})"
+        "actions_font_family_default": "Acties Lettertypefamilie (Standaard: {{fontFamily}})",
+        "content_font_family_default": "Content Font Family (Default:"
     },
     "add_game": "Voeg game toe",
     "All": "Allemaal",
@@ -337,7 +338,8 @@
         "gamescope": {
             "fpsLimiter": "Het aantal frames gamescope moet naar limiteren. Bijvb. 60",
             "fpsLimiterNoFocus": "De framelimiet gamescope moet aanhouden als de game niet is gefocused."
-        }
+        },
+        "dxfpslimit": "Sets a frame rate cap for DXVK games"
     },
     "info": {
         "heroic": {
@@ -888,5 +890,8 @@
         "rename": "Wijzig naam van \"{{name}}\"",
         "title": "Beheer categorieën",
         "add": "Voeg toe"
+    },
+    "tour": {
+        "back": "Back"
     }
 }

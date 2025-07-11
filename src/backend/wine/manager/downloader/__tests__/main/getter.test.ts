@@ -2,10 +2,9 @@ import { Repositorys, VersionInfo } from 'common/types'
 import { getAvailableVersions } from '../../main'
 import { test_data_release_list } from '../test_data/github-api-test-data.json'
 import { axiosClient } from 'backend/utils'
-import { logError, logWarning } from 'backend/logger/logger'
+import { logError } from 'backend/logger'
 
-jest.mock('backend/logger/logger')
-jest.mock('backend/logger/logfile')
+jest.mock('backend/logger')
 
 describe('Main - GetAvailableVersions', () => {
   test('fetch releases succesfully', async () => {
@@ -61,19 +60,5 @@ describe('Main - GetAvailableVersions', () => {
         'WineDownloader'
       )
     }
-  })
-
-  test('Invalid repository key returns nothing', async () => {
-    axiosClient.get = jest.fn()
-
-    await expect(
-      getAvailableVersions({ repositorys: [-1] })
-    ).resolves.toStrictEqual([])
-
-    expect(axiosClient.get).not.toBeCalled()
-    expect(logWarning).toBeCalledWith(
-      'Unknown and not supported repository key passed! Skip fetch for -1',
-      'WineDownloader'
-    )
   })
 })

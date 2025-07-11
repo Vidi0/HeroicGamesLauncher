@@ -4,12 +4,12 @@ import { getSteamDeckComp } from 'backend/wiki_game_info/steamdeck/utils'
 import { wikiGameInfoStore } from './electronStore'
 import { removeSpecialcharacters } from '../utils'
 import { Runner, SteamInfo, WikiInfo } from 'common/types'
-import { logError, logInfo, LogPrefix } from '../logger/logger'
+import { logError, logInfo, LogPrefix } from 'backend/logger'
 import { getInfoFromAppleGamingWiki } from './applegamingwiki/utils'
 import { getHowLongToBeat } from './howlongtobeat/utils'
 import { getInfoFromPCGamingWiki } from './pcgamingwiki/utils'
-import { isMac, isLinux } from '../constants'
 import { getUmuId } from './umu/utils'
+import { isLinux, isMac } from 'backend/constants/environment'
 
 export async function getWikiGameInfo(
   title: string,

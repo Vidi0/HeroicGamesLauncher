@@ -1,6 +1,5 @@
 .InstallModal__dialog {
   width: 700px;
-  min-height: fit-content;
   max-height: 90vh;
   min-width: fit-content;
   max-width: 80vw;
@@ -15,6 +14,10 @@
   & summary {
     font-size: var(--text-lg);
   }
+}
+
+.InstallModal__dialog button[aria-label='close'] {
+  z-index: 1;
 }
 
 .InstallModal__dialog > .anticheatInfo {

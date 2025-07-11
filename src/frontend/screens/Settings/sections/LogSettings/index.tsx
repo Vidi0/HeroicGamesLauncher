@@ -9,12 +9,12 @@ import ContextProvider from 'frontend/state/ContextProvider'
 import { GameInfo } from 'common/types'
 import { openDiscordLink } from 'frontend/helpers'
 import { faDiscord } from '@fortawesome/free-brands-svg-icons'
-import {
-  useGlobalState,
-  useShallowGlobalState
-} from 'frontend/state/GlobalStateV2'
+import useGlobalState from 'frontend/state/GlobalStateV2'
 import Upload from '@mui/icons-material/Upload'
 import Cloud from '@mui/icons-material/Cloud'
+import classNames from 'classnames'
+
+import type { GetLogFileArgs } from 'backend/logger/paths'
 
 interface LogBoxProps {
   logFileContent: string
@@ -69,16 +69,14 @@ const LogBox: React.FC<LogBoxProps> = ({ logFileContent }) => {
 
 export default function LogSettings() {
   const { t } = useTranslation()
-  const { appName } = useContext(SettingsContext)
-  const { setUploadLogFileProps } = useShallowGlobalState(
-    'setUploadLogFileProps'
-  )
+  const { appName, runner } = useContext(SettingsContext)
+  const { setUploadLogFileProps } = useGlobalState.keys('setUploadLogFileProps')
   const isInSettingsMenu = appName === 'default'
 
   const [logFileContent, setLogFileContent] = useState<string>('')
   const [logFileExist, setLogFileExist] = useState<boolean>(false)
-  const [showLogOf, setShowLogOf] = useState<string>(
-    appName === 'default' ? 'heroic' : appName
+  const [showLogOf, setShowLogOf] = useState<GetLogFileArgs>(
+    !runner ? {} : { appName, runner }
   )
   const [refreshing, setRefreshing] = useState<boolean>(true)
 
@@ -97,7 +95,7 @@ export default function LogSettings() {
   }, [epic.library, gog.library, amazon.library, sideloadedLibrary])
 
   const getLogContent = () => {
-    window.api.getLogContent(showLogOf).then((content: string) => {
+    void window.api.getLogContent(showLogOf).then((content: string) => {
       if (!content) {
         setLogFileContent(t('setting.log.no-file', 'No log file found.'))
         setLogFileExist(false)
@@ -122,26 +120,46 @@ export default function LogSettings() {
   }
 
   const descriptiveLogFileName = useMemo(() => {
-    if (showLogOf === 'heroic')
+    if (!showLogOf.runner)
       return t('setting.log.descriptiveNames.heroic', 'General Heroic log')
-    if (showLogOf === 'legendary')
+    if (showLogOf.appName) {
+      const gameTitle = installedGames.find(
+        ({ app_name }) => app_name === showLogOf.appName
+      )?.title
+      return t(
+        'setting.log.descriptiveNames.game-log',
+        'Game log of {{gameTitle}}',
+        { gameTitle }
+      )
+    }
+    if (showLogOf.runner === 'legendary')
       return t(
         'setting.log.descriptiveNames.legendary',
         'Epic Games / Legendary log'
       )
-    if (showLogOf === 'gogdl')
+    if (showLogOf.runner === 'gog')
       return t('setting.log.descriptiveNames.gog', 'GOG log')
-    if (showLogOf === 'nile')
+    if (showLogOf.runner === 'nile')
       return t('setting.log.descriptiveNames.nile', 'Amazon / Nile log')
-    const gameTitle = installedGames.find(
-      ({ app_name }) => app_name === showLogOf
-    )?.title
-    return t(
-      'setting.log.descriptiveNames.game-log',
-      'Game log of {{gameTitle}}',
-      { gameTitle }
-    )
+    return ''
   }, [showLogOf, installedGames, t])
+
+  const logFilesToShow = useMemo(() => {
+    const baseFiles: { title: string; args: GetLogFileArgs }[] = [
+      { title: 'Heroic', args: {} },
+      { title: 'Epic/Legendary', args: { runner: 'legendary' } },
+      { title: 'GOG', args: { runner: 'gog' } },
+      { title: 'Amazon/Nile', args: { runner: 'nile' } }
+    ]
+    const logsForInstalledGames = installedGames.map((game) => ({
+      title: game.title,
+      args: {
+        appName: game.app_name,
+        runner: game.runner
+      }
+    }))
+    return baseFiles.concat(logsForInstalledGames)
+  }, [installedGames])
 
   return (
     <>
@@ -152,49 +170,33 @@ export default function LogSettings() {
           'Join our Discord and look for the "#-support" section. Read the pinned "Read Me First | Frequently Asked Questions" thread and follow the instructions to share these logs and any relevant information about your problem.'
         )}
       </p>
-      <div className="logs-wrapper">
-        <span className="log-buttongroup">
-          {[
-            ['Heroic', 'heroic'],
-            ['Epic/Legendary', 'legendary'],
-            ['GOG', 'gogdl'],
-            ['Amazon/Nile', 'nile']
-          ].map((log) => {
-            const [label, value] = log
-            return (
-              <a
-                key={value}
-                className={`log-buttons ${
-                  showLogOf === value ? 'log-choosen' : ''
-                }`}
-                onClick={() => {
-                  setRefreshing(true)
-                  setShowLogOf(value)
-                }}
-                title={label}
-              >
-                {label}
-              </a>
-            )
-          })}
-          {installedGames.map((game) => {
-            return (
-              <a
-                key={game.app_name}
-                className={`log-buttons ${
-                  showLogOf === game.app_name ? 'log-choosen' : ''
-                }`}
-                onClick={() => {
-                  setRefreshing(true)
-                  setShowLogOf(game.app_name)
-                }}
-                title={game.title}
-              >
-                {game.title}
-              </a>
-            )
-          })}
-        </span>
+      <div
+        className={classNames('logs-wrapper', {
+          'game-log': !isInSettingsMenu
+        })}
+      >
+        {isInSettingsMenu && (
+          <span className="log-buttongroup">
+            {logFilesToShow.map(({ title, args }, i) => {
+              const isSelected =
+                args.appName === showLogOf.appName &&
+                args.runner === showLogOf.runner
+              return (
+                <a
+                  key={i}
+                  className={`log-buttons ${isSelected ? 'log-choosen' : ''}`}
+                  onClick={() => {
+                    setRefreshing(true)
+                    setShowLogOf(args)
+                  }}
+                  title={title}
+                >
+                  {title}
+                </a>
+              )
+            })}
+          </span>
+        )}
 
         {refreshing ? (
           <span className="setting log-box">
@@ -224,7 +226,7 @@ export default function LogSettings() {
             <a
               onClick={() => {
                 setUploadLogFileProps({
-                  appNameOrRunner: showLogOf,
+                  logFileArgs: showLogOf,
                   name: descriptiveLogFileName
                 })
               }}

@@ -1,4 +1,4 @@
-import { fixAsarPath } from '../constants'
+import { fixAsarPath } from 'backend/constants/paths'
 
 export function overrideProcessPlatform(os: string): string {
   const original_os = process.platform
@@ -11,7 +11,7 @@ export function overrideProcessPlatform(os: string): string {
   return original_os
 }
 
-jest.mock('../logger/logfile')
+jest.mock('../logger')
 
 describe('Constants - fixAsarPath', () => {
   test('need to fix path and replace correctly', () => {
@@ -28,7 +28,7 @@ describe('Constants - fixAsarPath', () => {
 describe('Constants - getShell', () => {
   async function getShell(): Promise<string> {
     jest.resetModules()
-    return import('../constants').then((module) => {
+    return import('../constants/others').then((module) => {
       return module.execOptions.shell
     })
   }

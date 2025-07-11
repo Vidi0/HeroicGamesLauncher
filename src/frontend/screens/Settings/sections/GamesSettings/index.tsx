@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 import {
+  AdvertiseAvxForRosetta,
   AlternativeExe,
   AutoDXVK,
   AutoDXVKNVAPI,
@@ -15,6 +16,7 @@ import {
   EnableFSR,
   EnableFsync,
   EnableMsync,
+  EnableWineWayland,
   EnvVariablesTable,
   GameMode,
   LauncherArgs,
@@ -91,8 +93,8 @@ export default function GamesSettings() {
       return true
     }
 
-    // Other tab show on linux and mac
-    if (isLinux || (isMac && tab === 'other')) {
+    // Other tab show on linux and mac (if not native)
+    if (isLinux || (isMac && !isNative)) {
       return true
     }
     return false
@@ -180,13 +182,15 @@ export default function GamesSettings() {
             <AutoDXVK />
             {isLinux && (
               <>
-                <AutoDXVKNVAPI />
+                {!window.isSteamDeck && <AutoDXVKNVAPI />}
                 <AutoVKD3D />
               </>
             )}
             <EnableEsync />
             <EnableFsync />
+            <EnableWineWayland />
             <EnableMsync />
+            <AdvertiseAvxForRosetta />
             <EnableFSR />
             <EnableDXVKFpsLimit />
             <Tools />

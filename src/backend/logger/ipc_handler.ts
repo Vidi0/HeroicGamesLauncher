@@ -1,26 +1,30 @@
-import { ipcMain } from 'electron'
+import { addListener, addHandler } from 'backend/ipc'
 import { existsSync, readFileSync } from 'graceful-fs'
+
 import { showItemInFolder } from '../utils'
-import { getLogFile } from './logfile'
+
+import { logInfo, logError, LogPrefix } from '.'
+import { getLogFilePath } from './paths'
 import {
   uploadLogFile,
   deleteUploadedLogFile,
   getUploadedLogFiles
 } from './uploader'
 
-ipcMain.handle('getLogContent', (event, appNameOrRunner) => {
-  const logPath = getLogFile(appNameOrRunner)
+addListener('logInfo', (e, message) => logInfo(message, LogPrefix.Frontend))
+addListener('logError', (e, message) => logError(message, LogPrefix.Frontend))
+
+addHandler('getLogContent', (event, appNameOrRunner) => {
+  const logPath = getLogFilePath(appNameOrRunner)
   return existsSync(logPath) ? readFileSync(logPath, 'utf-8') : ''
 })
 
-ipcMain.on('showLogFileInFolder', async (e, appNameOrRunner) =>
-  showItemInFolder(getLogFile(appNameOrRunner))
+addListener('showLogFileInFolder', (e, args) =>
+  showItemInFolder(getLogFilePath(args))
 )
 
-ipcMain.handle('uploadLogFile', async (e, name, appNameOrRunner) =>
-  uploadLogFile(name, appNameOrRunner)
-)
-ipcMain.handle('deleteUploadedLogFile', async (e, url) =>
+addHandler('uploadLogFile', async (e, name, args) => uploadLogFile(name, args))
+addHandler('deleteUploadedLogFile', async (e, url) =>
   deleteUploadedLogFile(url)
 )
-ipcMain.handle('getUploadedLogFiles', async () => getUploadedLogFiles())
+addHandler('getUploadedLogFiles', async () => getUploadedLogFiles())
