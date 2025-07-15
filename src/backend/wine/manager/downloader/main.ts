@@ -305,12 +305,13 @@ async function installVersion({
   })
 
   // Check if download checksum is correct
-  const fileBuffer = readFileSync(tarFile)
-  const hashSum = crypto.createHash('sha512')
-  hashSum.update(fileBuffer)
-
-  const downloadChecksum = hashSum.digest('hex')
   if (sourceChecksum) {
+    const fileBuffer = readFileSync(tarFile)
+    const hashSum = crypto.createHash(versionInfo.checksumSize ?? 'sha512')
+    hashSum.update(fileBuffer)
+
+    const downloadChecksum = hashSum.digest('hex')
+
     if (!sourceChecksum.includes(downloadChecksum)) {
       unlinkFile(tarFile)
       throw new Error('Checksum verification failed')

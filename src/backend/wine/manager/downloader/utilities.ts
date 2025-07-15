@@ -48,6 +48,10 @@ async function fetchReleases({
           for (const asset of release.assets) {
             if (asset.name.endsWith('sha512sum')) {
               release_data.checksum = asset.browser_download_url
+              release_data.checksumSize = 'sha512'
+            } else if (asset.name.endsWith('sha256sum')) {
+              release_data.checksum = asset.browser_download_url
+              release_data.checksumSize = 'sha256'
             } else if (
               asset.name.endsWith('tar.gz') ||
               asset.name.endsWith('tar.xz')
@@ -72,7 +76,8 @@ async function fetchReleases({
           download: latest.download,
           downsize: latest.downsize,
           disksize: latest.disksize,
-          checksum: latest.checksum
+          checksum: latest.checksum,
+          checksumSize: latest.checksumSize
         })
 
         resolve(releases)
