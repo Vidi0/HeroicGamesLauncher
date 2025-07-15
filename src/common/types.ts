@@ -686,6 +686,7 @@ export interface WikiInfo {
 export type Type =
   | 'Wine-GE'
   | 'GE-Proton'
+  | 'Proton-EM'
   | 'Proton'
   | 'Wine-Lutris'
   | 'Wine-Kron4ek'
@@ -718,6 +719,7 @@ export interface VersionInfo {
 export enum Repositorys {
   WINEGE,
   PROTONGE,
+  PROTONEM,
   PROTON,
   WINELUTRIS,
   WINECROSSOVER,

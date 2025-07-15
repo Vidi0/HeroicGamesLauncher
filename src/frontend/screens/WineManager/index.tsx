@@ -50,6 +50,11 @@ export default function WineManager(): JSX.Element | null {
     value: 'protonge',
     enabled: isLinux
   }
+  const protonem: WineManagerUISettings = {
+    type: 'Proton-EM',
+    value: 'protonem',
+    enabled: isLinux
+  }
   const gamePortingToolkit: WineManagerUISettings = {
     type: 'Game-Porting-Toolkit',
     value: 'gpt',
@@ -79,6 +84,7 @@ export default function WineManager(): JSX.Element | null {
     WineManagerUISettings[]
   >([
     protonge,
+    protonem,
     { type: 'Wine-GE', value: 'winege', enabled: isLinux },
     gamePortingToolkit,
     wineCrossover
@@ -144,6 +150,16 @@ export default function WineManager(): JSX.Element | null {
             {t(
               'wineExplanation.proton-ge',
               'GE-Proton is a Proton variant created by Glorious Eggroll. It is meant to be used along with the umu launcher (default in Heroic).'
+            )}
+          </div>
+        )
+      case 'Proton-EM':
+        return (
+          <div className="infoBox">
+            <FontAwesomeIcon icon={faCheck} color={'green'} />
+            {t(
+              'wineExplanation.proton-em',
+              'Proton-EM is a Proton variant created by Etaash Mathamsetty. It contains the latest winewayland patches.'
             )}
           </div>
         )

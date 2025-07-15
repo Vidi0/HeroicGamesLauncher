@@ -12,6 +12,7 @@ import {
 import {
   WINEGE_URL,
   PROTONGE_URL,
+  PROTONEM_URL,
   PROTON_URL,
   WINELUTRIS_URL,
   WINECROSSOVER_URL,
@@ -69,6 +70,20 @@ async function getAvailableVersions({
         await fetchReleases({
           url: PROTONGE_URL,
           type: 'GE-Proton',
+          count: count
+        })
+          .then((fetchedReleases: VersionInfo[]) => {
+            releases.push(...fetchedReleases)
+          })
+          .catch((error: Error) => {
+            logError(error, LogPrefix.WineDownloader)
+          })
+        break
+      }
+      case Repositorys.PROTONEM: {
+        await fetchReleases({
+          url: PROTONEM_URL,
+          type: 'Proton-EM',
           count: count
         })
           .then((fetchedReleases: VersionInfo[]) => {
