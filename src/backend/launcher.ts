@@ -712,7 +712,7 @@ async function prepareLaunch(
       }
     }
 
-    const runtimeType = isNative ? 'scout' : nonNativeRuntime
+    const runtimeType = isNative ? 'scout-on-soldier' : nonNativeRuntime
     const { path, args } = await getSteamRuntime(runtimeType)
     if (!path) {
       return {

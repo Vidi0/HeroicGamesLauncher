@@ -375,7 +375,7 @@ export interface GOGImportData {
 
 export interface SteamRuntime {
   path: string
-  type: 'sniper' | 'scout' | 'soldier'
+  type: 'sniper' | 'soldier' | 'scout-on-soldier' | 'scout'
   args: string[]
 }
 

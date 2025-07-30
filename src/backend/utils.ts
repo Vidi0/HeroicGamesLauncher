@@ -550,6 +550,11 @@ async function getSteamRuntime(
       args: ['--']
     },
     {
+      path: 'steamapps/common/SteamLinuxRuntime/run-in-scout-on-soldier',
+      type: 'scout-on-soldier',
+      args: ['--']
+    },
+    {
       path: 'ubuntu12_32/steam-runtime/run.sh',
       type: 'scout',
       args: []
