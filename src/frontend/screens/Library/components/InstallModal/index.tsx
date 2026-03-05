@@ -20,11 +20,12 @@ import WineSelector from './WineSelector'
 import { SelectField } from 'frontend/components/UI'
 import { useTranslation } from 'react-i18next'
 import ThirdPartyDialog from './ThirdPartyDialog'
-import { MenuItem } from '@mui/material'
+import { Box, MenuItem, SvgIcon } from '@mui/material'
 import {
   closeInstallGameModal,
   useInstallGameModal
 } from 'frontend/state/InstallGameModal'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 type Props = {
   appName: string
@@ -88,10 +89,6 @@ function InstallModal({ appName, runner, gameInfo = null }: Props) {
   )
 
   const getDefaultplatform = (): InstallPlatform => {
-    if (isLinux && gameInfo?.is_linux_native) {
-      return 'linux'
-    }
-
     if (isMac && gameInfo?.is_mac_native) {
       return 'Mac'
     }
@@ -143,7 +140,12 @@ function InstallModal({ appName, runner, gameInfo = null }: Props) {
       >
         {availablePlatforms.map((p, i) => (
           <MenuItem value={p.value} key={i}>
-            {p.name}
+            <Box sx={{ display: 'flex', placeItems: 'center' }}>
+              <SvgIcon sx={{ marginInlineEnd: 1 }}>
+                <FontAwesomeIcon icon={p.icon} />
+              </SvgIcon>
+              {p.name}
+            </Box>
           </MenuItem>
         ))}
       </SelectField>

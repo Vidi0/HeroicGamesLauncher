@@ -18,7 +18,13 @@ import {
 } from 'common/types'
 import { NileLoginData, NileRegisterData } from 'common/types/nile'
 
-export type Category = 'all' | 'legendary' | 'gog' | 'sideload' | 'nile'
+export type Category =
+  | 'all'
+  | 'legendary'
+  | 'gog'
+  | 'sideload'
+  | 'nile'
+  | 'zoom'
 
 export interface ContextType {
   error: boolean
@@ -35,7 +41,6 @@ export interface ContextType {
   isIntelMac: boolean
   refresh: (library: Runner, checkUpdates?: boolean) => Promise<void>
   refreshLibrary: (options: RefreshOptions) => Promise<void>
-  refreshWineVersionInfo: (fetch: boolean) => void
   refreshing: boolean
   refreshingInTheBackground: boolean
   hiddenGames: {
@@ -83,6 +88,13 @@ export interface ContextType {
     login: (data: NileRegisterData) => Promise<string>
     logout: () => Promise<void>
   }
+  zoom: {
+    library: GameInfo[]
+    username?: string
+    login: (url: string) => Promise<string>
+    logout: () => Promise<void>
+    enabled: boolean
+  }
   installingEpicGame: boolean
   allTilesInColor: boolean
   setAllTilesInColor: (value: boolean) => void
@@ -113,6 +125,8 @@ export interface ContextType {
   handleExperimentalFeatures: (newSetting: ExperimentalFeatures) => void
   disableDialogBackdropClose: boolean
   setDisableDialogBackdropClose: (value: boolean) => void
+  disableAnimations: boolean
+  setDisableAnimations: (value: boolean) => void
 }
 
 export type DialogModalOptions = {
@@ -121,6 +135,8 @@ export type DialogModalOptions = {
   message?: string | React.ReactElement
   buttons?: Array<ButtonOptions>
   type?: DialogType
+  className?: string
+  onClose?: () => void
 }
 
 export interface ExternalLinkDialogOptions {
@@ -195,6 +211,7 @@ export interface StoresFilters {
   gog: boolean
   nile: boolean
   sideload: boolean
+  zoom: boolean
 }
 
 export interface PlatformsFilters {
@@ -270,6 +287,7 @@ export interface GameContextType {
     uninstalling: boolean
     updating: boolean
     win: boolean
+    notPlayableOffline: boolean
   }
   statusContext?: string
   status: Status | undefined

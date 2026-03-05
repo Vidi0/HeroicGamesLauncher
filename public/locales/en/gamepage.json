@@ -14,6 +14,12 @@
             "title": "Move Game Installation"
         },
         "no": "NO",
+        "offline_warning": {
+            "message": "This game might not work properly offline. Do you want to play anyway?",
+            "playAnyway": "Play Anyway",
+            "title": "Offline Warning"
+        },
+        "ok": "OK",
         "repair": {
             "message": "Do you want to try to repair this game? This can take a long time.",
             "title": "Verify and Repair"
@@ -25,7 +31,10 @@
             "button": "Select",
             "image": "Select Image"
         },
-        "select-install-path": "Select Steam Installation Path",
+        "selectLaunchOption": {
+            "body": "Please select a launch option for this game (it can be changed later on the game settings):",
+            "title": "Select Launch Option ({{seconds}}s)"
+        },
         "sideload": {
             "exe": "Select Executable"
         },
@@ -33,6 +42,10 @@
             "keepInstalling": "Keep Installing",
             "message": "Do you wish to KEEP downloaded files?",
             "title": "Stop Installation"
+        },
+        "sync": {
+            "force_download_warning": "Local saves will be erased. Do you want to proceed?",
+            "force_upload_warning": "Cloud saves will be overwritten. Do you want to proceed?"
         },
         "uninstall": {
             "cannotUninstallEpic": "Epic games cannot be uninstalled while another Epic game is being installed.",
@@ -47,6 +60,9 @@
         "update": {
             "message": "This game has an update, apply update now?",
             "title": "Game Needs Update"
+        },
+        "warning": {
+            "title": "Warning"
         },
         "wineprefix": "Select WinePrefix Folder",
         "yes": "YES"
@@ -66,6 +82,7 @@
         "import": "Import Game",
         "install": "Install",
         "no-path-selected": "No path selected",
+        "play": "PLAY",
         "queue": {
             "remove": "Remove from Queue"
         },
@@ -183,36 +200,10 @@
         "saves": {
             "syncing": "Syncing Saves"
         },
-        "steam": {
-            "abort": "Abort Installation",
-            "cancel": "Cancel Installation",
-            "compatibility": "Be aware that not all games will work, and even if they do, they may not run as expected.",
-            "compatibility-layer-not-available": "Compatibility layer not available. Please install one from \"Settings > Wine Manager\" first.",
-            "crossover": "If you have Crossover installed, you won't need this since it can run the normal Steam just fine.",
-            "downloading": "Downloading {{percent}}%",
-            "hardware": "Apple Silicon M1+ (for Intel Macs Steam will work with Crossover)",
-            "install": "Install Steam",
-            "install-path": "Steam Installation Path",
-            "install-tooltip": "This will install the Windows version of Steam and it will run using a Heroic Compatibility Layer. \n\n    Some games especially older titles, newer 3D games, or those with anti-cheat software may not work properly. \n\n    ",
-            "installation": "Steam Installation",
-            "installing": "Installing",
-            "launch": "Launch Steam using the Heroic Compatibility Layer",
-            "launching": "Launching Steam...",
-            "macOS": "macOS 14.0 or above",
-            "notification": "Heroic will notify you once the installation is done.",
-            "patience": "If you wish to continue, please be patient since it can take a few minutes to finish depending on your internet connection and system configuration.",
-            "pleaseWait": "Please Wait",
-            "ram": "8GB of RAM",
-            "recommended": "Recommended specs for a better experience",
-            "select-path": "Select installation folder for Steam",
-            "specificVersion-pt1": "This will download a specific version of Steam from",
-            "specificVersion-pt2": "archive.org",
-            "specificVersion-pt3": "made to work through Heroic since new versions of Steam won't work on macOS."
-        },
         "winetricks": "Installing Winetricks Packages"
     },
     "launch": {
-        "options": "Launch Options..."
+        "default": "Default"
     },
     "modifyInstall": {
         "dlcsCollapsible": "DLC",
@@ -228,9 +219,11 @@
         "epic": "You are not logged in with an Epic account in Heroic. Don't use the store page to login, click the following button instead:",
         "gog": "You are not logged in with a GOG account in Heroic. Don't use the store page to login, click the following button instead:",
         "login": "Log in",
-        "title": "You are NOT logged in"
+        "title": "You are NOT logged in",
+        "zoom": "You are not logged in with a Zoom account in Heroic. Don't use the store page to login, click the following button instead:"
     },
     "Open": "Open",
+    "open-saves-folder": "Open Saves Folder",
     "queue": {
         "label": {
             "canceled": "Canceled",
@@ -245,8 +238,8 @@
     },
     "setting": {
         "show-wine-settings": "Show Wine settings",
-        "use-default-wine-settings": "Use Default Wine Settings",
-        "warn-use-default-wine-settings": "Only use this option if you know what you are doing.<br/>Sharing the same prefix for multiple games can create problems if their dependencies are incompatible.",
+        "use-shared-wine-config": "Use shared Wine prefix",
+        "warn-use-shared-wine-config": "Only use this option if you know what you are doing.<br />Sharing the same prefix for multiple games can create problems if their dependencies are incompatible.",
         "winecrossoverbottle": "CrossOver Bottle"
     },
     "sideload": {

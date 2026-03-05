@@ -49,7 +49,24 @@
         "wineprefix": "Valige WinePrefiksi kaust",
         "yes": "JAH",
         "close": "Sulge",
-        "select-install-path": "Vali Steami paigaldusasukoht"
+        "select-install-path": "Vali Steami paigaldusasukoht",
+        "selectLaunchOption": {
+            "body": "Palun valige selle mängu jaoks käivitusvalik (seda saab mängu sätetest hiljem muuta):",
+            "title": "Valige käivitusvalik ({{seconds}}s)"
+        },
+        "warning": {
+            "title": "Hoiatus"
+        },
+        "sync": {
+            "force_download_warning": "Kohalikud salvestused kustutatakse. Kas soovite jätkata?",
+            "force_upload_warning": "Pilvesalvestused kirjutatakse üle. Kas soovite jätkata?"
+        },
+        "ok": "OK",
+        "offline_warning": {
+            "message": "See mäng ei pruugi netiühenduseta korralikult toimida. Kas soovite ikkagi mängida?",
+            "playAnyway": "Mängi ikkagi",
+            "title": "Netiühenduse hoiatus"
+        }
     },
     "button": {
         "add_to_favourites": "Lisa lemmikute hulka",
@@ -78,7 +95,8 @@
         "details": "Üksikasjad",
         "changelog": "Näita muutuste nimekirja",
         "browse_files": "Sirvi faile",
-        "browse_wine_prefix": "Sirvi Wine'i prefiksi"
+        "browse_wine_prefix": "Sirvi Wine'i prefiksi",
+        "play": "MÄNGI"
     },
     "cloud_save_unsupported": "Mitte toetatud",
     "disabled": "Keelatud",
@@ -172,7 +190,8 @@
         },
         "playing": {
             "start": "Mängi",
-            "stop": "Mängib (Peata)"
+            "stop": "Mängib (Peata)",
+            "start_with_logs": "Mängi kohe (logidega)"
         },
         "saves": {
             "syncing": "Salvestuste sünkroonimine"
@@ -209,24 +228,26 @@
         }
     },
     "launch": {
-        "options": "Käivitusvalikud..."
+        "options": "Käivitusvalikud...",
+        "default": "Vaikimisi"
     },
     "not_logged_in": {
         "epic": "Te pole Epic kontoga Heroicusse sisse logitud. Ärge kasutage sisse logimiseks poelehte, vaid klikkige sellele nupule:",
         "gog": "Te pole GOG kontoga Heroicusse sisse logitud. Ärge kasutage sisse logimiseks poelehte, vaid klikkige sellele nupule:",
         "login": "Log in",
         "title": "Te EI OLE sisse logitud",
-        "amazon": "Te ei ole Heroicus Amazoni kontoga sisse logitud. Ärge kasutage sisselogimiseks poelehekülge. Klikkige selle asemel seda nuppu:"
+        "amazon": "Te ei ole Heroicus Amazoni kontoga sisse logitud. Ärge kasutage sisselogimiseks poelehekülge. Klikkige selle asemel seda nuppu:",
+        "zoom": "Te ei ole Heroicus Zoomi kontoga sisse logitud. Ärge kasutage sisselogimiseks poelehekülge. Klikkige selle asemel seda nuppu:"
     },
     "report_problem": "Teatage selle mängu käivitamise probleemist",
     "sdl": {
         "title": "Valige komponendid, mida paigaldada"
     },
     "setting": {
-        "use-default-wine-settings": "Kasuta vaikimisi Wine seadeid",
         "winecrossoverbottle": "CrossOveri pudel",
-        "warn-use-default-wine-settings": "Kasutage seda valikut ainult siis, kui teate, mida teete.<br/>Sama prefiksi jagamine mitme mängu puhul võib luua probleeme, kui pakid, millel need mängud sõltuvad, ei sobi kokku.",
-        "show-wine-settings": "Näita Wine'i seadeid"
+        "warn-use-shared-wine-config": "Kasutage seda valikut ainult siis, kui teate, mida teete.<br/>Sama prefiksi jagamine mitme mängu puhul võib luua probleeme, kui pakid, millel need mängud sõltuvad, ei sobi kokku.",
+        "show-wine-settings": "Näita Wine'i seadeid",
+        "use-shared-wine-config": "Kasuta jagatud Wine'i prefiksi"
     },
     "sideload": {
         "field": {
@@ -334,5 +355,6 @@
             "resume": "Jätka allalaadimist"
         }
     },
-    "Open": "Ava"
+    "Open": "Ava",
+    "open-saves-folder": "Ava salvestuste kaust"
 }

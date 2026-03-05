@@ -49,7 +49,24 @@
         "wineprefix": "Selecione a pasta do prefixo Wine",
         "yes": "SIM",
         "close": "Fechar",
-        "select-install-path": "Selecione o diretório de instalação da Steam"
+        "select-install-path": "Selecione o diretório de instalação da Steam",
+        "selectLaunchOption": {
+            "body": "Por favor selecione uma da opções abaixo (pode ser modificada mais tarde nas configurações):",
+            "title": "Selecione uma opção ({{seconds}}s)"
+        },
+        "warning": {
+            "title": "Aviso"
+        },
+        "sync": {
+            "force_download_warning": "Saves locais serão deletados. Você deseja continuar?",
+            "force_upload_warning": "Os Saves na nuvem serão sobrescritos. Você deseja continuar?"
+        },
+        "ok": "OK",
+        "offline_warning": {
+            "message": "Este jogo pode não funcionar adequadamente offline. Gostaria de jogar mesmo assim?",
+            "playAnyway": "Jogar mesmo assim",
+            "title": "Aviso Offline"
+        }
     },
     "button": {
         "add_to_favourites": "Adicionar aos favoritos",
@@ -78,7 +95,8 @@
         "details": "Detalhes",
         "changelog": "Mostrar lista de mudanças",
         "browse_files": "Navegar pelos arquivos",
-        "browse_wine_prefix": "Navegar pelo prefixo Wine"
+        "browse_wine_prefix": "Navegar pelo prefixo Wine",
+        "play": "JOGAR"
     },
     "cloud_save_unsupported": "Não suportado",
     "disabled": "Desabilitado",
@@ -186,7 +204,7 @@
         "steam": {
             "installing": "Instalando",
             "pleaseWait": "Aguarde",
-            "installation": "Parar a Instalação",
+            "installation": "Instalação da Steam",
             "install-path": "Diretório de instalação Steam",
             "abort": "Abortar instalação",
             "cancel": "Cancelar instalação",
@@ -211,24 +229,26 @@
         }
     },
     "launch": {
-        "options": "Opções de inicialização..."
+        "options": "Opções de inicialização...",
+        "default": "Padrão"
     },
     "not_logged_in": {
         "epic": "Você não está logado em uma conta Epic no Heroic. Não use a página da loja para fazer login, clique no seguinte botão:",
         "gog": "Você não está logado em uma conta GOG no Heroic. Não use a página da loja para fazer login, clique no seguinte botão:",
         "login": "Entrar",
         "title": "Você NÃO está logado",
-        "amazon": "Você não está logado em uma conta Amazon no Heroic. Não use a página da loja para fazer login, clique no seguinte botão:"
+        "amazon": "Você não está logado em uma conta Amazon no Heroic. Não use a página da loja para fazer login, clique no seguinte botão:",
+        "zoom": "Você não está conectado com uma conta Zoom no Heroic. Não use a página da loja para fazer login, clique no botão a seguir:"
     },
     "report_problem": "Relatar um problema na execução deste jogo",
     "sdl": {
         "title": "Selecione os componentes para instalar"
     },
     "setting": {
-        "use-default-wine-settings": "Usar configurações padrão do Wine",
         "winecrossoverbottle": "CrossOver Bottle",
         "show-wine-settings": "Mostrar configurações do Wine",
-        "warn-use-default-wine-settings": "Somente use essa opção se souber o que está fazendo.<br/>Compartilhar o mesmo prefixo para múltiplos jogos pode gerar problemas."
+        "warn-use-shared-wine-config": "Somente use essa opção se souber o que está fazendo.<br/>Compartilhar o mesmo prefixo para múltiplos jogos pode gerar problemas.",
+        "use-shared-wine-config": "Usar prefixo Wine compartilhado"
     },
     "sideload": {
         "field": {
@@ -250,7 +270,7 @@
         },
         "import-hint": {
             "title": "Importante! Você está adicionando um jogo da Epic/GOG/Amazon? Clique aqui!",
-            "content": "NÃO utilize essa função para isso.<br />Invés disso, <3>faça o login</3> na loja, procure pelo jogo em sua biblioteca, abra o diálogo de instalação, e clique no botão &quot;Import Game&quot;"
+            "content": "NÃO utilize essa função para isso.<br />Em vez disso, <3>faça o login</3> na loja, procure pelo jogo na sua biblioteca, abra o diálogo de instalação, e clique no botão &quot;Importar Jogo&quot;"
         }
     },
     "specs": {
@@ -337,5 +357,6 @@
         }
     },
     "Open": "Abrir",
-    "wikiLink": "Informação importante sobre esse jogo, leia isto:&nbsp;<1>Open page</1>"
+    "wikiLink": "Informação importante sobre esse jogo, leia isto:&nbsp;<1>Open page</1>",
+    "open-saves-folder": "Abrir a pasta dos saves"
 }

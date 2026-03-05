@@ -8,14 +8,19 @@ import {
   GameMetadataInner,
   LegendaryInstallInfo
 } from './types/legendary'
+import { NileInstallInfo, NileInstallPlatform } from './types/nile'
+import {
+  ZoomInstallPlatform,
+  ZoomInstalledInfo,
+  ZoomInstallInfo
+} from './types/zoom'
 import { TitleBarOverlay } from 'electron'
 import { ChildProcess } from 'child_process'
-import type { HowLongToBeatEntry } from 'backend/wiki_game_info/howlongtobeat/utils'
-import { NileInstallInfo, NileInstallPlatform } from './types/nile'
+import type { HeroicHowLongToBeatEntry } from 'backend/wiki_game_info/howlongtobeat/utils'
 import type { Path } from 'backend/schemas'
 import type LogWriter from 'backend/logger/log_writer'
 
-export type Runner = 'legendary' | 'gog' | 'sideload' | 'nile'
+export type Runner = 'legendary' | 'gog' | 'sideload' | 'nile' | 'zoom'
 
 // NOTE: Do not put enum's in this module or it will break imports
 
@@ -79,6 +84,7 @@ export type ExperimentalFeatures = {
   enableHelp: boolean
   cometSupport: boolean
   umuSupport?: boolean
+  zoomPlatform?: boolean
 }
 
 export interface AppSettings extends GameSettings {
@@ -104,7 +110,9 @@ export interface AppSettings extends GameSettings {
   disablePlaytimeSync: boolean
   disableSmoothScrolling: boolean
   disableLogs: boolean
+  disableAnimations: boolean
   discordRPC: boolean
+  disableGOGPresence: boolean
   downloadNoHttps: boolean
   downloadProtonToSteam: boolean
   egsLinkedPath: string
@@ -122,7 +130,7 @@ export interface AppSettings extends GameSettings {
   allowInstallationBrokenAnticheat: boolean
   disableUMU: boolean
   verboseLogs: boolean
-  allowNonGEProton: boolean
+  showValveProton: boolean
 }
 
 export type LibraryTopSectionOptions =
@@ -151,7 +159,7 @@ export interface ExtraInfo {
 export type GameConfigVersion = 'auto' | 'v0' | 'v0.1'
 
 export interface GameInfo {
-  runner: 'legendary' | 'gog' | 'sideload' | 'nile'
+  runner: 'legendary' | 'gog' | 'sideload' | 'nile' | 'zoom'
   store_url?: string
   app_name: string
   art_cover: string
@@ -202,11 +210,13 @@ export interface GameSettings {
   enableFsync: boolean
   enableWineWayland: boolean
   enableHDR: boolean
+  enableWoW64: boolean
   gamescope: GameScopeSettings
   enviromentOptions: EnviromentVariable[]
   ignoreGameUpdates: boolean
   language: string
   launcherArgs: string
+  lastUsedLaunchOption?: LaunchOption
   maxSharpness?: number
   nvidiaPrime: boolean
   offlineMode: boolean
@@ -228,6 +238,7 @@ export interface GameSettings {
   disableUMU: boolean
   verboseLogs: boolean
   advertiseAvxForRosetta: boolean
+  enableQuickSavesMenu: boolean
 }
 
 export type Status =
@@ -272,10 +283,26 @@ export interface InstallProgress {
   file?: string
 }
 export interface InstalledInfo {
+  manifest?: {
+    disk_size: number
+    download_size: number
+    app_name: string
+    languages: string[]
+    versionEtag: string
+    dependencies: string[]
+    perLangSize: {
+      [key: string]: {
+        download_size: number
+        disk_size: number
+      }
+    }
+  }
   executable: string
   install_path: string
   install_size: string
   is_dlc: boolean
+  isDosbox?: boolean
+  dosboxConf?: string[]
   version: string
   platform: InstallPlatform
   appName?: string
@@ -391,9 +418,7 @@ export interface LaunchPreperationResult {
 }
 
 export interface RpcClient {
-  updatePresence(d: unknown): void
-  reply(user: unknown, response: unknown): void
-  disconnect(): void
+  destroy(): void
 }
 
 export interface CallRunnerOptions {
@@ -404,6 +429,7 @@ export interface CallRunnerOptions {
   wrappers?: string[]
   onOutput?: (output: string, child: ChildProcess) => void
   abortId?: string
+  cwd?: string
 }
 
 export interface EnviromentVariable {
@@ -544,6 +570,7 @@ interface GamepadActionArgsWithoutMetadata {
     | 'esc'
     | 'tab'
     | 'shiftTab'
+    | 'keyboardClick'
   metadata?: undefined
 }
 
@@ -551,6 +578,7 @@ export type InstallPlatform =
   | LegendaryInstallPlatform
   | GogInstallPlatform
   | NileInstallPlatform
+  | ZoomInstallPlatform
   | 'Browser'
 
 export type ConnectivityStatus = 'offline' | 'check-online' | 'online'
@@ -560,6 +588,13 @@ export interface Tools {
   tool: string
   appName: string
   runner: Runner
+}
+
+export interface Tool {
+  name: string
+  url: string
+  os: string
+  strip?: number
 }
 
 export type DMStatus = 'done' | 'error' | 'abort' | 'paused'
@@ -675,7 +710,7 @@ export interface SteamInfo {
 export interface WikiInfo {
   pcgamingwiki: PCGamingWikiInfo | null
   applegamingwiki: AppleGamingWikiInfo | null
-  howlongtobeat: HowLongToBeatEntry | null
+  howlongtobeat: HeroicHowLongToBeatEntry | null
   gamesdb: GamesDBInfo | null
   steamInfo: SteamInfo | null
   umuId: string | null
@@ -711,6 +746,7 @@ export interface VersionInfo {
   downsize: number
   disksize: number
   checksum: string
+  release_notes_link: string
 }
 
 /**
@@ -764,6 +800,8 @@ export type InstallInfo =
   | LegendaryInstallInfo
   | GogInstallInfo
   | NileInstallInfo
+  | ZoomInstalledInfo
+  | ZoomInstallInfo
 
 export interface KnowFixesInfo {
   title: string

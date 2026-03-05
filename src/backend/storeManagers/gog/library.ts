@@ -29,6 +29,7 @@ import { dirname, join } from 'node:path'
 import { existsSync, readFileSync } from 'graceful-fs'
 
 import {
+  getRunnerLogWriter,
   logDebug,
   logError,
   logInfo,
@@ -420,33 +421,53 @@ export async function refresh(): Promise<ExecResult> {
           unifiedObject.folder_name = oldData.folder_name
         }
         gamesObjects.push(unifiedObject)
-      }
-      const installedInfo = installedGames.get(String(game.external_id))
-      // If game is installed, verify if installed game supports cloud saves
-      if (installedInfo && installedInfo?.platform !== 'linux') {
-        const saveLocations = await getSaveSyncLocation(
-          unifiedObject.app_name,
-          installedInfo
-        )
 
-        if (saveLocations) {
-          unifiedObject.cloud_save_enabled = true
-          unifiedObject.gog_save_location = saveLocations
+        const installedInfo = installedGames.get(String(game.external_id))
+        // If game is installed, verify if installed game supports cloud saves
+        if (installedInfo && installedInfo?.platform !== 'linux') {
+          const saveLocations = await getSaveSyncLocation(
+            unifiedObject.app_name,
+            installedInfo
+          )
+
+          if (saveLocations) {
+            unifiedObject.cloud_save_enabled = true
+            unifiedObject.gog_save_location = saveLocations
+          }
         }
+        // Create new object to not write install data into library store
+        const copyObject = Object.assign({}, unifiedObject)
+        if (installedInfo) {
+          copyObject.is_installed = true
+          copyObject.install = installedInfo
+        }
+        library.set(copyObject.app_name, copyObject)
       }
-      // Create new object to not write install data into library store
-      const copyObject = Object.assign({}, unifiedObject)
-      if (installedInfo) {
-        copyObject.is_installed = true
-        copyObject.install = installedInfo
-      }
-      library.set(copyObject.app_name, copyObject)
       break
     }
   }
 
   apiInfoCache.commit() // Sync cache to drive
   libraryStore.set('games', gamesObjects)
+
+  void new Promise(() => {
+    const logLines: string[] = []
+    gamesObjects.forEach((gameData) => {
+      if (gameData.title == 'Galaxy Common Redistributables') return
+
+      let line = `* ${gameData.title} (App name: ${gameData.app_name})`
+      if (gameData.install.is_dlc) line += ' - DLC'
+      logLines.push(line)
+    })
+    const sortedTitles = logLines.sort((a, b) =>
+      a.toLowerCase().localeCompare(b.toLowerCase())
+    )
+
+    const logContent = `Games List:\n${sortedTitles.join('\n')}\n\nTotal: ${logLines.length}\n`
+    const gogLogWriter = getRunnerLogWriter('gog')
+    void gogLogWriter.logInfo(logContent)
+  })
+
   logInfo('Saved games data', LogPrefix.Gog)
 
   return defaultExecResult
@@ -927,7 +948,11 @@ export async function checkForGameUpdate(
 export async function gogToUnifiedInfo(
   info: GamesDBData | undefined
 ): Promise<GameInfo> {
-  if (!info || info.type !== 'game' || !info.game.visible_in_library) {
+  if (
+    !info ||
+    !['game', 'mod'].includes(info.type) ||
+    !info.game.visible_in_library
+  ) {
     // @ts-expect-error TODO: Handle this somehow
     return {}
   }

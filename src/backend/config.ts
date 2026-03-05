@@ -20,13 +20,7 @@ import {
 } from './utils/compatibility_layers'
 import { backendEvents } from './backend_events'
 import { configStore } from './constants/key_value_stores'
-import {
-  isFlatpak,
-  isLinux,
-  isMac,
-  isIntelMac,
-  isWindows
-} from './constants/environment'
+import { isFlatpak, isLinux, isMac, isWindows } from './constants/environment'
 import {
   configPath,
   defaultWinePrefix,
@@ -323,7 +317,7 @@ class GlobalConfigV0 extends GlobalConfig {
       enableUpdates: false,
       addDesktopShortcuts: false,
       addStartMenuShortcuts: false,
-      autoInstallDxvk: isLinux || isIntelMac,
+      autoInstallDxvk: isLinux || isMac,
       autoInstallVkd3d: isLinux,
       autoInstallDxvkNvapi: isLinux,
       addSteamShortcuts: false,
@@ -352,6 +346,7 @@ class GlobalConfigV0 extends GlobalConfig {
       enableMsync: isMac,
       enableWineWayland: false,
       enableHDR: false,
+      enableWoW64: false,
       eacRuntime: isLinux,
       battlEyeRuntime: isLinux,
       framelessWindow: false,
@@ -361,7 +356,9 @@ class GlobalConfigV0 extends GlobalConfig {
       verboseLogs: true,
       downloadProtonToSteam: false,
       advertiseAvxForRosetta: isMac && defaultWine.type === 'toolkit',
-      noTrayIcon: false
+      noTrayIcon: false,
+      showValveProton: false,
+      disableGOGPresence: false
     }
     // @ts-expect-error TODO: We need to settle on *one* place to define settings defaults
     return settings

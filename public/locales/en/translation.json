@@ -3,6 +3,7 @@
         "actions_font_family_default": "Actions Font Family (Default: {{fontFamily}})",
         "all_tiles_in_color": "Show all game tiles in color",
         "content_font_family_default": "Content Font Family (Default: {{fontFamily}})",
+        "disable_animations": "Disable UI animations",
         "disable_dialog_backdrop_close": "Disable closing dialogs by clicking outside",
         "disable_smooth_scrolling": "Disable smooth scrolling (requires restart)",
         "fonts": "Fonts",
@@ -17,6 +18,7 @@
         "title": "Adtraction is blocked"
     },
     "Amazon Games": "Amazon Games",
+    "amazon-luna": "Amazon Luna",
     "analyticsModal": {
         "disable": "Disable",
         "enable": "Enable",
@@ -69,10 +71,16 @@
                 "message": "The CrossOver bottle \"{{bottle_name}}\" does not exist, can't launch!",
                 "title": "CrossOver bottle not found"
             },
+            "dxmt": {
+                "message": "Error downloading DXMT! Check your connection!",
+                "title": "DXMT Download Error"
+            },
             "dxvk": {
                 "message": "Error installing DXVK/VKD3D! Please check your connection!",
                 "title": "DXVK/VKD3D error"
             },
+            "executableNotFound": "Executable not found",
+            "executableNotFoundMessage": "Heroic could not find the executable for this game. Please set it manually in the game settings.",
             "folder-not-found": {
                 "title": "Game folder appears to be deleted, do you want to remove the game from the installed list?"
             },
@@ -85,11 +93,6 @@
                 "generic": "An error has occurred! Try to Logout and Login on your Epic account. {{newline}}  {{error}}"
             },
             "moving": "Error Moving Game {{error}}",
-            "steam": {
-                "error": "Steam executable not found. Installation was probably canceled by user or failed on Steam side.",
-                "message": "Steam installation failed! Please read the instructions carefully and try again! {{paragraph}} {{error}}",
-                "title": "Steam error"
-            },
             "title": "Error",
             "uncaught-exception": {
                 "message": "A uncaught exception occured:{{newLine}}{{error}}{{newLine}}{{newLine}} Report the exception on our Github repository.",
@@ -107,6 +110,7 @@
         "info": {
             "update": {
                 "detail": "Do you want to download the update in the background?",
+                "detailNoAutoupdate": "Automatic updates are not supported for your packaging format. Please use your package manager to update.",
                 "message": "There is a new Version available!",
                 "message-finished": "Do you want to restart Heroic now?",
                 "title": "Heroic Games Launcher",
@@ -286,7 +290,7 @@
     },
     "generic": {
         "error": {
-            "component": "No Games found - Try to logout and login again or one of the options bellow"
+            "component": "No games found - Try to logout and login again or one of the options below"
         },
         "library": {
             "refresh": "Refresh Library"
@@ -367,7 +371,6 @@
             "part7": " to skip the launcher in some games, etc."
         },
         "preferSystemLibs": "Custom Wine versions (Wine-GE, Wine-Lutris) are shipped with their library dependencies. By enabling this option, these shipped libraries will be ignored and Wine will load system libraries instead. Warning! Issues may occur if dependencies are not met.",
-        "primerun": "Use dedicated graphics card to render game on multi-GPU systems. Only needed on gaming laptops or desktops that use a headless GPU for rendering (NVIDIA Optimus, AMD CrossFire)",
         "steam_path": {
             "info": "This path lets Heroic determine what version of Proton Steam uses, for adding non-Steam games to Steam."
         },
@@ -392,7 +395,8 @@
             "part2": "For other places, use a symbolic link to one of these folders"
         },
         "wine-hdr": "HDR enhances colors by providing brighter highlights and deeper contrasts. For HDR to work, both the display and the game must support it.",
-        "wine-wayland": "The Wine-Wayland experimental driver allows games to run natively under the Wayland display protocol. Enabling might break some games."
+        "wine-wayland": "The Wine-Wayland experimental driver allows games to run natively under the Wayland display protocol. Enabling might break some games.",
+        "WoW64": "The Wine WoW64 mode allows 32-bit Windows games to be run on 64-bit Wine. Enabling may improve performance, but could also break older 32-bit games."
     },
     "info": {
         "heroic": {
@@ -426,6 +430,9 @@
         "loading": "Loading",
         "releaseDate": "Release Date"
     },
+    "launch": {
+        "options": "Launch Options..."
+    },
     "library": {
         "hideAlphabetFilter": "Hide Alphabet Filter",
         "showAlphabetFilter": "Show Alphabet Filter",
@@ -448,17 +455,12 @@
         "epic": "Epic Games Login",
         "gog": "GOG Login",
         "message": "Login with your platform. You can login to more than one platform at the same time.",
-        "old-mac": "Your macOS version is {{version}}. macOS 12 or newer is required to log in."
+        "old-mac": "Your macOS version is {{version}}. macOS 12 or newer is required to log in.",
+        "zoom": "Zoom Login"
     },
     "message": {
         "sync": "Sync Complete",
         "unsync": "Unsync Complete"
-    },
-    "notification": {
-        "steam": {
-            "error": "Steam installation failed! Please read the instructions carefully and try again!",
-            "success": "Steam for Windows has been installed successfully!"
-        }
     },
     "notify": {
         "error": {
@@ -589,7 +591,6 @@
         "win": "Windows"
     },
     "please-wait": "Please wait...",
-    "prime-gaming": "Prime Gaming",
     "progress": "Progress",
     "queue": {
         "label": {
@@ -617,17 +618,6 @@
             },
             "label": "Allow installation of games with broken or denied anticheat"
         },
-        "allow_non_ge_proton": {
-            "confirmation": {
-                "dont_show": "Don't show them",
-                "message": "We recommend GE-Proton to be used with Heroic because non-GE Proton builds lack winetricks and protofixes. You can still use then if you want.",
-                "show": "I understand, show them",
-                "title": "Are you sure?"
-            },
-            "info_label": "Non-GE Proton versions ignored",
-            "label": "Allow using non-GE Proton builds to run games",
-            "wine_selector_warning": "Non-GE versions of Proton are ignored by default, enable them in the Advanced global settings"
-        },
         "alt-gogdl-bin": "Choose an Alternative GOGDL Binary to use",
         "alt-legendary-bin": "Choose an Alternative Legendary Binary",
         "alt-nile-bin": "Choose an Alternative Nile Binary",
@@ -642,7 +632,7 @@
         "checkForUpdatesOnStartup": "Check for Heroic Updates on Startup",
         "crossover-version": "Crossover/Wine Version",
         "custom_css": {
-            "warning": "Warning: this applies to the whole frontend. That means the wrong style can render Heroic unusable. If needed, the setting can be changes manually in `~/.config/heroic/config.json`. Do NOT copy styles from sources you don't trust."
+            "warning": "Warning: this applies to the whole frontend. That means the wrong style can render Heroic unusable. If needed, the setting can be changed manually in `~/.config/heroic/config.json`. Do NOT copy styles from sources you don't trust."
         },
         "custom_themes_path": "Custom Themes Path",
         "customWineProton": "Custom Wine/Proton Paths",
@@ -651,6 +641,7 @@
         "default-steam-path": "Default Steam path",
         "defaultWinePrefix": "Set Folder for new Wine Prefixes",
         "disable_controller": "Disable Heroic navigation using controller",
+        "disable_gog_presence": "Disable GOG Presence updates",
         "disable_logs": "Disable Logs",
         "disablePlaytimeSync": "Disable playtime synchronization",
         "disableUMU": "Disable umu",
@@ -659,6 +650,7 @@
         "download-proton-steam": "Download GE-Proton to Steam directory",
         "dxfpslimit": "Limit DirectX Games FPS",
         "egs-sync": "Sync with Installed Epic Games",
+        "enable-quick-sync-menu": "Enable Quick Save-Sync Menu on game page",
         "enableFSRHack": "Enable FSR Hack (Wine version needs to support it)",
         "eosOverlay": {
             "cancelInstall": "Cancel",
@@ -685,7 +677,8 @@
         "experimental_features": {
             "cometSupport": "Comet support",
             "enableHelp": "Help component",
-            "enableNewDesign": "New design"
+            "enableNewDesign": "New design",
+            "zoomPlatform": "Zoom Platform support (only Linux)"
         },
         "frameless-window": {
             "confirmation": {
@@ -721,7 +714,8 @@
                 "gog": "GOG log",
                 "heroic": "General Heroic log",
                 "legendary": "Epic Games / Legendary log",
-                "nile": "Amazon / Nile log"
+                "nile": "Amazon / Nile log",
+                "zoom": "Zoom log"
             },
             "instructions": "Join our Discord and look for the \"#-support\" section. Read the pinned \"Read Me First | Frequently Asked Questions\" thread and follow the instructions to share these logs and any relevant information about your problem.",
             "instructions_title": "How to report a problem?",
@@ -743,6 +737,7 @@
                 },
                 "error": {
                     "content": "Failed to upload log file. Check Heroic's general log for details",
+                    "manual_upload": "Click the \"SHOW LOG FILE IN FOLDER\" button and upload the \"launch.log\" file manually to Discord or any online file sharing service.",
                     "title": "Upload failed"
                 },
                 "header": "Uploaded log files",
@@ -776,13 +771,6 @@
         "offlinemode": "Run Game Offline",
         "prefered_language": "Prefered Language (Language Code)",
         "preferSystemLibs": "Prefer system libraries",
-        "primerun": {
-            "confirmation": {
-                "message": "Only one graphics card was detected in this system. Please note that this option is intended for multi-GPU systems with headless GPUs (like laptops). On single-GPU systems, the GPU is automatically used & enabling this option can cause issues. Do you really want to enable this option?",
-                "title": "Only 1 GPU detected"
-            },
-            "description": "Use Dedicated Graphics Card"
-        },
         "runexe": {
             "title": "Run EXE on Prefix"
         },
@@ -791,7 +779,19 @@
             "placeholder": "Select the exact save games folder",
             "warning": "Please check twice if the path is correct (click to retry)"
         },
+        "scripts": "Scripts:",
         "select_theme": "Select Theme",
+        "show_valve_proton": {
+            "confirmation": {
+                "dont_show": "Don't show them",
+                "message": "We recommend custom Proton forks (GE-Proton, Proton-CachyOS, etc.) to be used with Heroic because Valve's Proton builds lack winetricks and protofixes. You can still use then if you want.",
+                "show": "I understand, show them",
+                "title": "Are you sure?"
+            },
+            "info_label": "Valve Proton versions ignored",
+            "label": "Allow using Valve Proton builds to run games",
+            "wine_selector_warning": "Valve versions of Proton are ignored by default, enable them in the Advanced global settings"
+        },
         "showfps": "Show FPS (DX9, 10 and 11)",
         "showMetalOverlay": "Show Stats Overlay",
         "start-in-tray": "Start Minimized",
@@ -802,7 +802,8 @@
         "winecrossoverbottle": "CrossOver Bottle",
         "wineprefix": "WinePrefix folder",
         "wineversion": "Wine Version",
-        "wineWayland": "Enable Wine-Wayland (Experimental) (Wine version needs to support it)"
+        "wineWayland": "Enable Wine-Wayland (Experimental) (Wine version needs to support it)",
+        "WoW64": "Enable WoW64 (Experimental)"
     },
     "settings": {
         "advanced": {
@@ -858,6 +859,8 @@
         "gamescope": {
             "searchMsg": "Searching for gamescope executable."
         },
+        "launchOptions": "Launch Options",
+        "legacy_warning": "Warning: The settings on this tab are mostly deprecated and might not work at all.",
         "log": {
             "long-log-hint": "Log truncated, last 1000 lines are shown!"
         },
@@ -866,6 +869,7 @@
             "games_settings_defaults": "Game Defaults",
             "gamescope": "Gamescope",
             "general": "General",
+            "legacy": "Legacy",
             "log": "Log",
             "other": "Other",
             "sync": "Cloud Saves Sync",
@@ -942,7 +946,6 @@
             "search": "Use the Search bar to search for your games.",
             "sortInstalled": "Sort games by installed status.",
             "sortOptions": "Click here to sort games alphabetically.",
-            "steamInstall": "Use this button to install the Windows version of Steam and play your Windows games using Crossover, Wine or GPTK.",
             "viewToggle": "Switch between grid and list view for your games.",
             "welcome": {
                 "intro": "Welcome to the Heroic Library! This is where you can see all your games across different stores.",
@@ -1015,6 +1018,7 @@
             "title": "Wine Manager",
             "unzipping": "Unzipping"
         },
+        "notes": "Notes",
         "release": "Release Date",
         "size": "Size"
     },
@@ -1032,5 +1036,6 @@
         "nothingYet": "Nothing was installed by Winetricks yet",
         "openGUI": "Open Winetricks GUI",
         "search": "Search fonts or components"
-    }
+    },
+    "zoom-store": "Zoom Store"
 }

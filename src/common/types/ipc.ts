@@ -118,6 +118,7 @@ interface SyncIPCFunctions {
     runner: Runner,
     status: boolean
   ) => void
+  logoutZoom: () => void
 }
 
 /*
@@ -177,6 +178,7 @@ interface AsyncIPCFunctions {
   ) => Promise<InstallInfo | null>
   getUserInfo: () => Promise<UserInfo | undefined>
   getAmazonUserInfo: () => Promise<NileUserData | undefined>
+  getZoomUserInfo: () => Promise<{ username: string } | undefined>
   isLoggedIn: () => boolean
   login: (sid: string) => Promise<{
     status: 'done' | 'failed'
@@ -190,6 +192,7 @@ interface AsyncIPCFunctions {
     status: 'done' | 'failed'
     user: NileUserData | undefined
   }>
+  authZoom: (url: string) => Promise<{ status: 'done' | 'error' }>
   logoutLegendary: () => Promise<void>
   logoutAmazon: () => Promise<void>
   getAlternativeWine: () => Promise<WineInstallation[]>
@@ -231,6 +234,7 @@ interface AsyncIPCFunctions {
   installWineVersion: (release: WineVersionInfo) => Promise<void>
   refreshWineVersionInfo: (fetch?: boolean) => Promise<void>
   removeWineVersion: (release: WineVersionInfo) => Promise<void>
+  'wine.isValidVersion': (release: WineInstallation) => Promise<boolean>
   shortcutsExists: (appName: string, runner: Runner) => boolean
   addToSteam: (appName: string, runner: Runner) => Promise<boolean>
   removeFromSteam: (appName: string, runner: Runner) => Promise<void>
@@ -308,7 +312,6 @@ interface AsyncIPCFunctions {
   deleteUploadedLogFile: (url: string) => Promise<boolean>
   getUploadedLogFiles: () => Promise<Record<string, UploadedLogData>>
   getCustomCSS: () => Promise<string>
-  installSteamWindows: (path: string) => Promise<void>
   isIntelMac: () => boolean
 }
 

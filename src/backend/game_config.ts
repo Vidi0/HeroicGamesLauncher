@@ -208,6 +208,7 @@ class GameConfigV0 extends GameConfig {
       autoInstallDxvk,
       autoInstallDxvkNvapi,
       autoInstallVkd3d,
+      DXVKFpsCap,
       preferSystemLibs,
       autoSyncSaves,
       enableEsync,
@@ -216,6 +217,8 @@ class GameConfigV0 extends GameConfig {
       enableFsync,
       enableWineWayland,
       enableHDR,
+      enableDXVKFpsLimit,
+      enableWoW64,
       maxSharpness,
       launcherArgs,
       nvidiaPrime,
@@ -246,6 +249,7 @@ class GameConfigV0 extends GameConfig {
       autoInstallDxvk,
       autoInstallDxvkNvapi,
       autoInstallVkd3d,
+      DXVKFpsCap,
       preferSystemLibs,
       autoSyncSaves,
       enableEsync,
@@ -254,6 +258,8 @@ class GameConfigV0 extends GameConfig {
       enableFsync,
       enableWineWayland,
       enableHDR,
+      enableWoW64,
+      enableDXVKFpsLimit,
       maxSharpness,
       launcherArgs,
       nvidiaPrime,
@@ -273,7 +279,8 @@ class GameConfigV0 extends GameConfig {
       afterLaunchScriptPath,
       gamescope,
       verboseLogs,
-      advertiseAvxForRosetta
+      advertiseAvxForRosetta,
+      enableQuickSavesMenu: false
     } as GameSettings
 
     let gameSettings = {} as GameSettings
@@ -312,6 +319,11 @@ class GameConfigV0 extends GameConfig {
   }
 
   public setSetting(key: keyof GameSettings, value: unknown) {
+    // check if the key exists, if not, initialize it with a undefined value
+    if (!(key in this.config)) {
+      this.config[key] = undefined as never
+    }
+
     this.config[key] = value as never
     logInfo(`${this.appName}: Setting ${key} to ${JSON.stringify(value)}`)
     return this.flush()

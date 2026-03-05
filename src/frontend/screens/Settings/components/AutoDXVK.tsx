@@ -16,11 +16,16 @@ const AutoDXVK = () => {
   const { platform } = useContext(ContextProvider)
   const isLinux = platform === 'linux'
   const [autoInstallVkd3d] = useSetting('autoInstallVkd3d', false)
+  const [autoInstallDxvkNvapi] = useSetting('autoInstallDxvkNvapi', false)
   const [wineVersion] = useSetting('wineVersion', defaultWineVersion)
   const { appName } = useContext(SettingsContext)
   const [installingDxvk, setInstallingDxvk] = React.useState(false)
 
-  if (wineVersion.type !== 'wine' || wineVersion.bin.includes('toolkit')) {
+  if (
+    wineVersion.type !== 'wine' ||
+    wineVersion.bin.includes('toolkit') ||
+    wineVersion.name.endsWith('-DXMT')
+  ) {
     return <></>
   }
 
@@ -50,7 +55,10 @@ const AutoDXVK = () => {
             : t('setting.autodxvk', 'Auto Install/Update DXVK on Prefix')
         }
         fading={installingDxvk}
-        disabled={installingDxvk || (isLinux && autoInstallVkd3d)}
+        disabled={
+          installingDxvk ||
+          (isLinux && (autoInstallDxvkNvapi || autoInstallVkd3d))
+        }
       />
 
       <InfoIcon

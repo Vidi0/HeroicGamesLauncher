@@ -10,7 +10,8 @@
         "titles_always_visible": "始终在游戏库中显示标题",
         "actions_font_family_default": "操作字族（默认：{{fontFamily}}）",
         "content_font_family_default": "内容字族（默认：{{fontFamily}}）",
-        "disable_smooth_scrolling": "禁用平滑滚动（需要重启）"
+        "disable_smooth_scrolling": "禁用平滑滚动（需要重启）",
+        "disable_animations": "禁用界面动画"
     },
     "add_game": "添加游戏",
     "All": "全部",
@@ -29,7 +30,7 @@
             "title": "缓存已清理"
         },
         "choose": "选择",
-        "choose-egs-prefix": "选择已安装 Epic 的前置",
+        "choose-egs-prefix": "选择已安装 EGS 的前置",
         "choose-gogdl-binary": "选择 GOGDL 二进制文件 （需要重启）",
         "choose-legendary-binary": "选择 Legendary 二进制文件",
         "customWine": "选择 Wine 或 Proton 二进制文件",
@@ -96,6 +97,12 @@
                 "error": "未找到 Steam 可执行文件。安装可能被用户取消或在 Steam 端失败。",
                 "message": "Steam 安装失败！请仔细阅读说明并重试！ {{paragraph}} {{error}}",
                 "title": "Steam 错误"
+            },
+            "executableNotFound": "未找到可执行文件",
+            "executableNotFoundMessage": "Heroic 找不到这个游戏的可执行文件。请在游戏设置中手动指定。",
+            "dxmt": {
+                "message": "下载 DXMT 出错！检查你的连接！",
+                "title": "DXMT 下载错误"
             }
         },
         "info": {
@@ -105,7 +112,8 @@
                 "message": "有新版本可用！",
                 "message-finished": "你想立即重启 Heroic 吗？",
                 "title": "Heroic 游戏启动器",
-                "title-finished": "更新已完成"
+                "title-finished": "更新已完成",
+                "detailNoAutoupdate": "您的打包格式不支持自动更新。请使用您的包管理器进行更新。"
             }
         },
         "no": "否",
@@ -256,7 +264,7 @@
     },
     "generic": {
         "error": {
-            "component": "没有发现游戏 - 尝试注销并再次登录或以下选项之一"
+            "component": "没有找到游戏 - 尝试注销并再次登录或尝试以下选项之一"
         },
         "library": {
             "refresh": "刷新游戏库"
@@ -369,7 +377,8 @@
         "advertiseAvxForRosetta": "在 Apple Silicon Mac 机器上通过 Rosetta 运行 Windows 游戏时启用 AVX 指令集支持。这对于一些需要 AVX 支持的游戏如《死亡搁浅》等来说可能是必需的。",
         "wine-hdr": "HDR 提供更明亮的高潮和更深的对比增强色彩。要让 HDR 工作，显示器和游戏都必须支持 HDR。",
         "wine-wayland": "Wine-Wayland 实验性驱动允许游戏在 Wayland 显示协议下原生运行。启用可能破坏一些游戏。",
-        "analytics": "允许 Heroic 收集 100% 匿名的使用数据帮助改进应用。需要重启才能生效。"
+        "analytics": "允许 Heroic 收集 100% 匿名的使用数据帮助改进应用。需要重启才能生效。",
+        "WoW64": "Wine WoW64 模式允许在 64 位 Wine 上运行 32 位 Windows 游戏。启用该选项可能会提高性能，但也可能会无法运行较早的 32 位游戏。"
     },
     "info": {
         "heroic": {
@@ -397,7 +406,7 @@
             "message": "Wine 使用所谓的 WINEPREFIX 来封装 Windows 应用程序。这个前缀包含 Wine 配置文件和 C:(Windows操作系统上的主磁盘) 文件层次结构的副本。你的游戏保存文件和通过 winetricks 安装的依赖项存储在这个复制的 C:驱动器中。"
         },
         "wine-path-invalid": "Wine 路径无效，请选择另一个。",
-        "wine-path-none-found": "没有找到 Wine 版本，从 Wine Manager 下载一个"
+        "wine-path-none-found": "未找到 Wine 版本，从 Wine 管理器下载一个"
     },
     "install": {
         "path": "选择安装路径"
@@ -429,7 +438,8 @@
         "gog": "GOG 登录",
         "message": "登录你的平台。你可以同时登录多个平台。",
         "amazon": "Amazon 登录",
-        "old-mac": "你的 macOS 版本是 {{version}}。需要 macOS 12 或以上版本才能登录。"
+        "old-mac": "你的 macOS 版本是 {{version}}。需要 macOS 12 或以上版本才能登录。",
+        "zoom": "Zoom 登录"
     },
     "message": {
         "sync": "同步完成",
@@ -533,7 +543,7 @@
             "gameWidth": "游戏宽度",
             "upscaleHeight": "Upscale 高度",
             "fpsLimiterNoFocus": "FPS 限制程序（无焦点）",
-            "nis": "NVIDIA 图形缩放（NIS）",
+            "nis": "NVIDIA 图像缩放（NIS）",
             "borderless": "无边框",
             "fullscreen": "全屏",
             "interger": "整数型 Upscale",
@@ -546,7 +556,7 @@
         "gogdl-version": "GOGDL 版本： ",
         "legendary-version": "Legendary 版本： ",
         "weblate": "帮助翻译 Heroic。",
-        "nile-version": "尼罗河版本： "
+        "nile-version": "Nile 版本： "
     },
     "Other": "其他",
     "placeholder": {
@@ -668,7 +678,8 @@
                 },
                 "error": {
                     "content": "上传日志文件失败。详情请查看 Heroic 的常规日志",
-                    "title": "上传失败了"
+                    "title": "上传失败了",
+                    "manual_upload": "单击 “在文件夹中显示日志文件”按钮并手动上传“launch.log”文件到 Discord 或任何在线文件分享服务。"
                 },
                 "header": "已上传的日志文件",
                 "minutes-ago": "上传于 {{minutesAgo, relativetime(minutes)}} 分钟前",
@@ -681,7 +692,8 @@
                 "gog": "GOG 日志",
                 "heroic": "常规 Heroic 日志",
                 "legendary": "Epic Games / Legendary 日志",
-                "nile": "Amazon / Nile 日志"
+                "nile": "Amazon / Nile 日志",
+                "zoom": "Zoom 日志"
             },
             "show-uploads": "显示上传的日志文件"
         },
@@ -737,7 +749,8 @@
             "enableHelp": "帮助组件",
             "automaticWinetricksFixes": "自动应用已知的修复",
             "umuSupport": "将 umu 用作 Proton 运行时",
-            "cometSupport": "Comet 支持"
+            "cometSupport": "Comet 支持",
+            "zoomPlatform": "Zoom 平台支持（仅 Linux）"
         },
         "disablePlaytimeSync": "停用游戏时间同步",
         "gamescope": {
@@ -745,7 +758,7 @@
             "enableUpscaling": "启用分辨率提升",
             "missingMsg": "我们在 PATH 上找不到 Gamescope。请先安装它或将其添加到 PATH。",
             "enableForceGrabCursor": "启用强制抓取指针",
-            "missingMsgFlatpak": "我们找不到兼容的 Gamescope 版本。安装带 24.08 版 runtime 的 Gamescope flatpak 包 ，然后重启 Heroic.",
+            "missingMsgFlatpak": "我们找不到兼容的 Gamescope 版本。安装带 25.08 版 runtime 的 Gamescope flatpak 包 ，然后重启 Heroic.",
             "warningFlatpak": "我们找不到兼容的 Gamescope 版本。安装带 {{runtimeVersion}} 版 runtime 的 Gamescope flatpak 包 ，然后重启 Heroic。"
         },
         "frameless-window": {
@@ -790,7 +803,21 @@
             "info_label": "忽略了非 GE Proton 版本"
         },
         "no-tray-icon": "隐藏系统托盘图标（需要重启）",
-        "analyticsOptIn": "发送匿名数据帮助 Heroic 开发"
+        "analyticsOptIn": "发送匿名数据帮助 Heroic 开发",
+        "show_valve_proton": {
+            "confirmation": {
+                "dont_show": "不要显示它们",
+                "message": "我们推荐在 Heroic 中使用自定义 Proton 分叉（GE-Proton、Proton-CachyOS 等），因为 Valve 的 Proton 构建缺少 winetricks 和 protofixes。但如果需要您仍可使用它。",
+                "show": "我明白，显示它们",
+                "title": "您确定吗？"
+            },
+            "info_label": "已忽略 Valve Proton",
+            "label": "允许使用 Valve Proton 构建运行游戏",
+            "wine_selector_warning": "默认忽略 Valve 版本的 Proton，可在高级全局设置中启用它们"
+        },
+        "WoW64": "启用 WoW64（实验性）",
+        "scripts": "脚本：",
+        "enable-quick-sync-menu": "在游戏页上开启“快速保存—同步”菜单"
     },
     "settings": {
         "battlEyeRuntime": {
@@ -827,7 +854,8 @@
             "sync": "存档-同步",
             "wineExt": "Wine 扩展",
             "systemInformation": "系统信息",
-            "gamescope": "Gamescope"
+            "gamescope": "Gamescope",
+            "legacy": "老古董"
         },
         "open-config-file": "打开配置文件",
         "reset-heroic": "重置 Heroic",
@@ -880,7 +908,7 @@
                 "help5": "Amazon 库信息（游戏列表、安装对话框信息）",
                 "help6": "这不会删除：",
                 "help9": "游戏设置",
-                "help8": "已安装的游戏"
+                "help8": "已安装游戏"
             },
             "resetHeroic": {
                 "help": "这会删除所有设置和环迅但不会删除你已安装的游戏或 Epic 凭据。在此之后，需要手动重启 Heroic 便携版本（AppImage、WinPortable, ...）。"
@@ -889,11 +917,13 @@
                 "clearCache": "清除缓存",
                 "resetHeroic": "重置 Heroic"
             },
-            "details": "详细内容"
+            "details": "详情"
         },
         "custom_css": {
             "title": "自定义 CSS 样式"
-        }
+        },
+        "launchOptions": "启动选项",
+        "legacy_warning": "警告：此选项卡上的设置大多已废弃，可能完全无法使用。"
     },
     "Settings": "设置",
     "sidebar": {
@@ -939,7 +969,7 @@
         "manageaccounts": "管理账号",
         "quit": "退出",
         "cancel": "取消",
-        "quitMessage": "你确定你要退出吗？"
+        "quitMessage": "你确定要退出吗？"
     },
     "webview": {
         "controls": {
@@ -958,7 +988,8 @@
             "unzipping": "解压缩"
         },
         "release": "发布日期",
-        "size": "大小"
+        "size": "大小",
+        "notes": "附注"
     },
     "externalLink": {
         "warning": "你即将打开一个外部链接。",
@@ -985,8 +1016,8 @@
         "search": "搜索字体或部件",
         "nothingYet": "Winetricks 还没安装任何东西",
         "installed": "已安装的部件：",
-        "loading-available": "加载可用的部件…",
-        "no-components": "没有可用的部件"
+        "loading-available": "正在加载可用组件…",
+        "no-components": "无可用组件"
     },
     "window": {
         "minimize": "最小化窗口",
@@ -1093,5 +1124,10 @@
             "pt7": "你可以随时在应用设置中更改这一设置。"
         },
         "title": "发送匿名分析信息"
+    },
+    "amazon-luna": "Amazon Luna",
+    "zoom-store": "Zoom 商店",
+    "launch": {
+        "options": "启动选项..."
     }
 }

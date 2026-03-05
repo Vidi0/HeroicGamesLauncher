@@ -11,6 +11,7 @@ import i18next from 'i18next'
 import { createRedistDMQueueElement } from 'backend/storeManagers/gog/redist'
 import { existsSync } from 'fs'
 import { gogRedistPath } from 'backend/storeManagers/gog/constants'
+import { onConnectivityChange } from 'backend/online_monitor'
 
 const downloadManager = new TypeCheckedStoreBackend('downloadManager', {
   cwd: 'store',
@@ -23,6 +24,19 @@ const downloadManager = new TypeCheckedStoreBackend('downloadManager', {
 
 let queueState: DownloadManagerState = 'idle'
 let currentElement: DMQueueElement | null = null
+let autoPaused = false
+
+onConnectivityChange((status) => {
+  if (status === 'offline' && isRunning()) {
+    logInfo('System offline, auto-pausing downloads', LogPrefix.DownloadManager)
+    pauseCurrentDownload()
+    autoPaused = true
+  } else if (status === 'online' && autoPaused) {
+    logInfo('System online, auto-resuming downloads', LogPrefix.DownloadManager)
+    autoPaused = false
+    void resumeCurrentDownload()
+  }
+})
 
 function getFirstQueueElement() {
   const elements = downloadManager.get('queue', [])
@@ -96,7 +110,9 @@ async function initQueue() {
     }
   }
 
-  queueState = 'idle'
+  if (queueState !== 'paused') {
+    queueState = 'idle'
+  }
 }
 
 async function addToQueue(element: DMQueueElement) {
@@ -149,6 +165,7 @@ async function addToQueue(element: DMQueueElement) {
         element.params.runner === 'gog' &&
         element.params.platformToInstall.toLowerCase() === 'windows' &&
         installInfo &&
+        installInfo.manifest &&
         'dependencies' in installInfo.manifest
       ) {
         const newDependencies = installInfo.manifest.dependencies || []
@@ -174,7 +191,7 @@ async function addToQueue(element: DMQueueElement) {
   sendFrontendMessage('changedDMQueueInformation', elements, queueState)
 
   if (isIdle()) {
-    initQueue()
+    void initQueue()
   }
 }
 
@@ -240,6 +257,7 @@ function pauseCurrentDownload() {
     stopCurrentDownload()
   }
   queueState = 'paused'
+  autoPaused = false
   sendFrontendMessage(
     'changedDMQueueInformation',
     downloadManager.get('queue', []),
@@ -248,7 +266,8 @@ function pauseCurrentDownload() {
 }
 
 function resumeCurrentDownload() {
-  initQueue()
+  autoPaused = false
+  void initQueue()
 }
 
 function stopCurrentDownload() {
@@ -318,5 +337,6 @@ export {
   getQueueInformation,
   cancelCurrentDownload,
   pauseCurrentDownload,
-  resumeCurrentDownload
+  resumeCurrentDownload,
+  isRunning
 }

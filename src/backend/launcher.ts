@@ -20,7 +20,7 @@ import {
 
 import i18next from 'i18next'
 import { existsSync, mkdirSync } from 'graceful-fs'
-import { join, dirname } from 'path'
+import { join, dirname, isAbsolute } from 'path'
 
 import {
   constructAndUpdateRPC,
@@ -80,7 +80,7 @@ import {
   defaultWinePrefix,
   fixesPath,
   flatpakHome,
-  publicDir,
+  galaxyCommunicationExePath,
   runtimePath,
   userHome
 } from './constants/paths'
@@ -100,6 +100,7 @@ import { gameAnticheatInfo } from './anticheat/utils'
 
 import type { PartialDeep } from 'type-fest'
 import type LogWriter from './logger/log_writer'
+import { isEnabled } from './storeManagers/legendary/eos_overlay/eos_overlay'
 
 let powerDisplayId: number | null
 
@@ -113,6 +114,10 @@ const launchEventCallback: (args: LaunchParams) => StatusPromise = async ({
   const game = gameManagerMap[runner].getGameInfo(appName)
   const gameSettings = await gameManagerMap[runner].getSettings(appName)
   const { autoSyncSaves, savesPath, gogSaves = [] } = gameSettings
+
+  if (!launchArguments && gameSettings.lastUsedLaunchOption) {
+    launchArguments = gameSettings.lastUsedLaunchOption
+  }
 
   const { title } = game
 
@@ -373,6 +378,7 @@ function filterGameSettingsForLog(
       delete gameSettings.enableFSR
       delete gameSettings.enableWineWayland
       delete gameSettings.enableHDR
+      delete gameSettings.enableWoW64
       delete gameSettings.showFps
       delete gameSettings.enableDXVKFpsLimit
       delete gameSettings.eacRuntime
@@ -391,6 +397,7 @@ function filterGameSettingsForLog(
     delete gameSettings.enableFSR
     delete gameSettings.enableWineWayland
     delete gameSettings.enableHDR
+    delete gameSettings.enableWoW64
     delete gameSettings.showMangohud
     delete gameSettings.disableUMU
     delete gameSettings.useSteamRuntime
@@ -398,22 +405,22 @@ function filterGameSettingsForLog(
 
     if (notNative) {
       const wineType = gameSettings.wineVersion
+      delete gameSettings.preferSystemLibs
+      delete gameSettings.autoInstallVkd3d
+      delete gameSettings.autoInstallDxvkNvapi
       if (wineType) {
         if (wineType.type === 'wine') {
           delete gameSettings.wineCrossoverBottle
+          delete gameSettings.advertiseAvxForRosetta
         }
 
         if (wineType.type === 'toolkit') {
           delete gameSettings.autoInstallDxvk
-          delete gameSettings.autoInstallDxvkNvapi
-          delete gameSettings.autoInstallVkd3d
           delete gameSettings.wineCrossoverBottle
         }
 
         if (wineType.type === 'crossover') {
           delete gameSettings.autoInstallDxvk
-          delete gameSettings.autoInstallDxvkNvapi
-          delete gameSettings.autoInstallVkd3d
           delete gameSettings.winePrefix
         }
       }
@@ -423,6 +430,7 @@ function filterGameSettingsForLog(
       delete gameSettings.wineVersion
       delete gameSettings.winePrefix
       delete gameSettings.wineCrossoverBottle
+      delete gameSettings.advertiseAvxForRosetta
     }
   }
 
@@ -434,6 +442,7 @@ function filterGameSettingsForLog(
     delete gameSettings.enableFsync
     delete gameSettings.enableWineWayland
     delete gameSettings.enableHDR
+    delete gameSettings.enableWoW64
     delete gameSettings.enableDXVKFpsLimit
     delete gameSettings.DXVKFpsCap
     delete gameSettings.autoInstallDxvk
@@ -780,6 +789,8 @@ async function prepareWineLaunch(
   failureReason?: string
   envVars?: Record<string, string>
 }> {
+  const gameInfo = gameManagerMap[runner].getGameInfo(appName)
+
   const gameSettings =
     GameConfig.get(appName).config ||
     (await GameConfig.get(appName).getSettings())
@@ -820,12 +831,32 @@ async function prepareWineLaunch(
         failureReason: `CrossOver bottle "${gameSettings.wineCrossoverBottle}" does not exist`
       }
     }
+  }
 
-    logWriter.writeString(
-      Winetricks.listInstalled(runner, appName).then((installedPackages) => {
-        const packagesString = installedPackages.join(', ')
-        return `Winetricks packages: ${packagesString}`
-      })
+  logWriter.logInfo(
+    Winetricks.listInstalled(runner, appName).then((installedPackages) => {
+      const packagesString = installedPackages.join(', ')
+      return `Winetricks packages: ${packagesString}\n\n`
+    })
+  )
+
+  // We only want to log this for legendary on Linux
+  // On windows, the overlay is installed globally
+  // On mac, the overlay doesn't work
+  if (runner === 'legendary' && isLinux) {
+    const checkEOSOverlayStatusPromise = isEnabled(appName)
+
+    // The first time a game runs, the overlay is not enabled yet at this point
+    void logWriter.logInfo(
+      checkEOSOverlayStatusPromise.then(
+        (enabled) => `EOS Overlay: ${enabled ? 'Enabled' : 'Not enabled'}`
+      )
+    )
+  }
+
+  if (gameSettings.offlineMode && !gameInfo.canRunOffline) {
+    void logWriter.logWarning(
+      "Warning: 'offlineMode' is turned on but the game does not support offline mode. Disable 'offlineMode' in the game's settings."
     )
   }
 
@@ -877,7 +908,7 @@ async function prepareWineLaunch(
       await nileSetup(appName)
     }
     if (runner === 'legendary') {
-      await legendarySetup(appName)
+      await legendarySetup(appName, logWriter)
     }
 
     await installFixes(appName, runner)
@@ -885,28 +916,23 @@ async function prepareWineLaunch(
 
   try {
     if (runner === 'gog' && experimentalFeatures?.cometSupport !== false) {
-      const communicationSource = join(
-        publicDir,
-        'bin/x64/win32/GalaxyCommunication.exe'
-      )
-
-      const galaxyCommPath =
+      const galaxyCommWinePath =
         'C:\\ProgramData\\GOG.com\\Galaxy\\redists\\GalaxyCommunication.exe'
       const communicationDest = await getWinePath({
-        path: galaxyCommPath,
+        path: galaxyCommWinePath,
         gameSettings,
         variant: 'unix'
       })
 
       if (!existsSync(communicationDest)) {
         mkdirSync(dirname(communicationDest), { recursive: true })
-        await copyFile(communicationSource, communicationDest)
+        await copyFile(galaxyCommunicationExePath, communicationDest)
         await runWineCommand({
           commandParts: [
             'sc',
             'create',
             'GalaxyCommunication',
-            `binpath=${galaxyCommPath}`
+            `binpath=${galaxyCommWinePath}`
           ],
           gameSettings,
           protonVerb: 'runinprefix'
@@ -949,9 +975,7 @@ async function prepareWineLaunch(
     await download('battleye_runtime')
   }
 
-  const { folder_name: installFolderName } =
-    gameManagerMap[runner].getGameInfo(appName)
-  const envVars = setupWineEnvVars(gameSettings, installFolderName)
+  const envVars = setupWineEnvVars(gameSettings, gameInfo.folder_name)
 
   return { success: true, envVars: envVars }
 }
@@ -1085,6 +1109,10 @@ function setupWrapperEnvVars(wrapperEnv: WrapperEnv) {
     case 'sideload':
       ret.HEROIC_APP_SOURCE = 'sideload'
       break
+    case 'zoom':
+      ret.HEROIC_APP_SOURCE = 'zoom'
+      ret.STORE = 'zoomplatform'
+      break
   }
 
   return ret
@@ -1156,7 +1184,10 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
   if (!gameSettings.enableEsync && wineVersion.type === 'proton') {
     ret.PROTON_NO_ESYNC = '1'
   }
-  if (gameSettings.enableMsync && isMac) {
+  if (
+    isMac &&
+    (gameSettings.enableMsync || wineVersion.name.endsWith('-DXMT'))
+  ) {
     ret.WINEMSYNC = '1'
     // This is to solve a problem with d3dmetal
     if (wineVersion.type === 'toolkit') {
@@ -1180,6 +1211,13 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
       if (gameSettings.enableHDR) {
         ret.DXVK_HDR = '1'
       }
+    }
+  }
+  if (isLinux && gameSettings.enableWoW64) {
+    if (wineVersion.type === 'proton') {
+      ret.PROTON_USE_WOW64 = '1'
+    } else {
+      ret.WINEARCH = 'wow64'
     }
   }
   if (wineVersion.type === 'proton') {
@@ -1276,6 +1314,23 @@ function setupWineEnvVars(gameSettings: GameSettings, gameId = '0') {
     wineVersion.type === 'toolkit'
   ) {
     ret.ROSETTA_ADVERTISE_AVX = '1'
+  }
+  // Workaround for Steam Input virtual gamepad not working for games launched through HGL from Steam
+  // using deprecated WineGE/ProtonGE releases (<= 8.x) following SDL behavior change on version >= 2.30
+  // (included with flatpak Freedesktop runtime 24.08 or newer)
+  // https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/issues/4708
+  // https://github.com/libsdl-org/SDL/issues/14410
+  // https://gitlab.com/freedesktop-sdk/freedesktop-sdk/-/issues/1818
+  if (
+    isLinux &&
+    /(GE|Wine|Proton)-(Proton[7-8]|[4-7].*-GE|GE-4.[0-9]*)/.test(
+      wineVersion.name
+    )
+  ) {
+    ret.SteamVirtualGamepadInfo = ''
+    logWarning(
+      `Deprecated Wine-GE/Proton-GE release (<= 8.x) detected. Applying workaround for Steam Input virtual gamepad detection.`
+    )
   }
   return ret
 }
@@ -1403,7 +1458,7 @@ export async function verifyWinePrefix(
 
 function launchCleanup(rpcClient?: RpcClient) {
   if (rpcClient) {
-    rpcClient.disconnect()
+    rpcClient.destroy()
     logInfo('Stopped Discord Rich Presence', LogPrefix.Backend)
   }
 }
@@ -1462,12 +1517,12 @@ async function runWineCommand({
   }
 
   if (!(await validWine(wineVersion))) {
-    return { stdout: '', stderr: '' }
+    return { stdout: '', stderr: 'Invalid wine' }
   }
 
   const env_vars: Record<string, string> = {
     ...process.env,
-    GAMEID: 'umu-0',
+    ...options?.env,
     ...setupEnvVars(settings, gameInstallPath),
     ...setupWineEnvVars(settings, installFolderName),
     PROTON_VERB: protonVerb
@@ -1525,7 +1580,7 @@ async function runWineCommand({
         options.onOutput(data, child)
       }
 
-      stdout.push(data.trim())
+      stdout.push(data)
     })
 
     child.stderr.on('data', (data: string) => {
@@ -1535,7 +1590,7 @@ async function runWineCommand({
         options.onOutput(data, child)
       }
 
-      stderr.push(data.trim())
+      stderr.push(data)
     })
 
     child.on('close', async (code) => {
@@ -1571,7 +1626,7 @@ interface RunnerProps {
   name: Runner
   logPrefix: LogPrefix
   bin: string
-  dir: string
+  dir?: string
 }
 
 const commandsRunning: Record<string, Promise<ExecResult>> = {}
@@ -1637,11 +1692,11 @@ async function callRunner(
   commandParts = commandParts.filter(Boolean)
 
   let bin = runner.bin
-  let fullRunnerPath = join(runner.dir, bin)
+  let fullRunnerPath = runner.dir ? join(runner.dir, bin) : bin
 
   // macOS/Linux: `spawn`ing an executable in the current working directory
   // requires a "./"
-  if (!isWindows) bin = './' + bin
+  if (!isWindows && !isAbsolute(bin) && runner.dir) bin = './' + bin
 
   // On Windows: Use PowerShell's `Start-Process` to wait for the process and
   // its children to exit, provided PowerShell is available
@@ -1680,7 +1735,7 @@ async function callRunner(
       await writer.logInfo(
         [prefix, safeCommand, '\n\n'].filter(Boolean).join(' ')
       )
-      await writer.logInfo('Game Output:')
+      if (appName) await writer.logInfo('Game Output:')
     }
 
     const files = options.logWriters
@@ -1703,7 +1758,7 @@ async function callRunner(
 
   let promise = new Promise<ExecResult>((res, rej) => {
     const child = spawn(bin, commandParts, {
-      cwd: runner.dir,
+      cwd: options?.cwd || runner.dir,
       env: { ...process.env, ...options?.env },
       signal: abortController.signal
     })
@@ -1878,10 +1933,11 @@ async function getWinePath({
   gameSettings: GameSettings
   variant?: 'win' | 'unix'
 }): Promise<string> {
+  logDebug(`Getting wine path for ${path}.`, LogPrefix.Backend)
   // TODO: Proton has a special verb for getting Unix paths, and another one for Windows ones. Use those instead
   //       Note that this would involve running `proton runinprefix cmd /c echo path` first to expand env vars
   //       https://github.com/ValveSoftware/Proton/blob/4221d9ef07cc38209ff93dbbbca9473581a38255/proton#L1526-L1533
-  const { stdout } = await runWineCommand({
+  const { stdout, stderr } = await runWineCommand({
     gameSettings,
     commandParts: [
       'cmd',
@@ -1894,7 +1950,16 @@ async function getWinePath({
     protonVerb: 'runinprefix',
     ignoreLogging: true
   })
-  return stdout.trim()
+
+  const result = stdout.trim()
+  if (!result) {
+    logError(
+      `Couldn't get wine path for ${path}.\n${stderr}`,
+      LogPrefix.Backend
+    )
+  }
+
+  return result
 }
 
 async function runBeforeLaunchScript(
@@ -1965,6 +2030,8 @@ async function runScriptForGame(
       HEROIC_GAME_RUNNER: gameInfo.runner,
       HEROIC_GAME_SCRIPT_STAGE: scriptStage,
       HEROIC_GAME_TITLE: gameInfo.title,
+      HEROIC_GAME_SETTINGS: JSON.stringify(gameSettings),
+      HEROIC_GAME_INFO: JSON.stringify(gameInfo),
       ...process.env
     }
     const child = spawn(scriptPath, {

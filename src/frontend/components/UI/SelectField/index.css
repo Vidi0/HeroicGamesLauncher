@@ -10,7 +10,6 @@
   width: 100%;
   height: 40px;
   background: var(--input-background);
-  font-family: var(--primary-font-family), 'Noto Color Emoji';
   font-weight: normal;
   font-size: var(--text-md);
   color: var(--text-secondary);
@@ -42,22 +41,20 @@
 .MuiPopover-root .MuiPaper-root {
   color: var(--text-secondary);
   background-color: var(--input-background);
-
-  .MuiMenuItem-root {
-    font-family: var(--primary-font-family);
-  }
 }
 
 .selectStyle {
-  text-indent: 22px;
+  text-indent: var(--space-sm);
   padding-inline-end: 4rem;
+  white-space: nowrap;
 }
 
-.selectFieldWrapper.isRTL .MuiOutlinedInput-root {
+.selectFieldWrapper.isRTL .MuiOutlinedInput-root,
+.isRTL .selectStyle {
   background-position:
-    calc(15px) calc(50% + 1px),
-    calc(20px) calc(50% + 1px),
-    calc(40px) 50%;
+    15px calc(50% + 1px),
+    20px calc(50% + 1px),
+    40px 50%;
 }
 
 .selectFieldWrapper label {

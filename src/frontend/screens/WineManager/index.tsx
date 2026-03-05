@@ -18,6 +18,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { WineVersionInfo, Type, WineManagerUISettings } from 'common/types'
 import { hasHelp } from 'frontend/hooks/hasHelp'
+import classNames from 'classnames'
+import useGlobalState from 'frontend/state/GlobalStateV2'
 
 const WineItem = lazy(
   async () => import('frontend/screens/WineManager/components/WineItem')
@@ -41,9 +43,12 @@ export default function WineManager(): JSX.Element | null {
     </p>
   )
 
-  const { refreshWineVersionInfo, refreshing, platform, isIntelMac } =
-    useContext(ContextProvider)
+  const { platform, isIntelMac } = useContext(ContextProvider)
   const isLinux = platform === 'linux'
+  const { refreshingWineVersions, refreshWineVersions } = useGlobalState.keys(
+    'refreshingWineVersions',
+    'refreshWineVersions'
+  )
 
   const protonge: WineManagerUISettings = {
     type: 'GE-Proton',
@@ -186,17 +191,21 @@ export default function WineManager(): JSX.Element | null {
               }
               return null
             })}
-          </Tabs>
-          <button
-            className={'FormControl__button'}
-            title={t('generic.library.refresh', 'Refresh Library')}
-            onClick={() => refreshWineVersionInfo(true)}
-          >
-            <FontAwesomeIcon
-              className={'FormControl__segmentedFaIcon'}
-              icon={faSyncAlt}
+            {/* refresh button is a tab to make navigation more predictable */}
+            <Tab
+              title={t('generic.library.refresh', 'Refresh Library')}
+              onClick={() => refreshWineVersions(true)}
+              sx={{ minWidth: 0 }}
+              icon={
+                <FontAwesomeIcon
+                  className={classNames('FormControl__segmentedFaIcon', {
+                    'fa-spin': refreshingWineVersions
+                  })}
+                  icon={faSyncAlt}
+                />
+              }
             />
-          </button>
+          </Tabs>
         </span>
         {wineVersionExplanation}
         {wineVersions.length ? (
@@ -208,12 +217,13 @@ export default function WineManager(): JSX.Element | null {
           >
             <div className="gameListHeader">
               <span>{t('info.version', 'Wine Version')}</span>
+              <span>{t('wine.notes', 'Notes')}</span>
               <span>{t('wine.release', 'Release Date')}</span>
               <span>{t('wine.size', 'Size')}</span>
               <span>{t('wine.actions', 'Action')}</span>
             </div>
-            {refreshing && <UpdateComponent />}
-            {!refreshing &&
+            {refreshingWineVersions && <UpdateComponent />}
+            {!refreshingWineVersions &&
               !!wineVersions.length &&
               wineVersions.map((release) => {
                 return <WineItem key={release.version} {...release} />

@@ -16,7 +16,7 @@ import ContextProvider from 'frontend/state/ContextProvider'
 import { GameStatus } from 'common/types'
 import {
   AllowInstallationBrokenAnticheat,
-  AllowNonGEProton,
+  ShowValveProton,
   AltGOGdlBin,
   AltLegendaryBin,
   AltNileBin,
@@ -27,6 +27,7 @@ import {
   ExperimentalFeatures,
   ResetHeroic
 } from '../../components'
+import DisableGOGPresence from '../../components/DisableGOGPresence'
 
 export default function AdvancedSetting() {
   const { config } = useContext(SettingsContext)
@@ -47,6 +48,7 @@ export default function AdvancedSetting() {
   const { libraryStatus, platform } = useContext(ContextProvider)
   const { t } = useTranslation()
   const isWindows = platform === 'win32'
+  const isLinux = platform === 'linux'
 
   useEffect(() => {
     // set copied to clipboard status to true if it's not already set to true
@@ -178,9 +180,11 @@ export default function AdvancedSetting() {
 
       <DisableLogs />
 
+      <DisableGOGPresence />
+
       <AllowInstallationBrokenAnticheat />
 
-      <AllowNonGEProton />
+      {isLinux && <ShowValveProton />}
 
       <hr />
 

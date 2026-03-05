@@ -1,6 +1,6 @@
 import { initImagesCache } from './images_cache'
 import { downloadAntiCheatData } from './anticheat/utils'
-import { DiskSpaceData, StatusPromise } from 'common/types'
+import { DiskSpaceData, StatusPromise, WineInstallation } from 'common/types'
 import * as path from 'path'
 import {
   BrowserWindow,
@@ -28,13 +28,14 @@ import 'source-map-support/register'
 import Backend from 'i18next-fs-backend'
 import i18next from 'i18next'
 import { join } from 'path'
-import { DXVK, SteamWindows, Winetricks } from './tools'
+import { DXVK, Winetricks } from './tools'
 import { GameConfig } from './game_config'
 import { GlobalConfig } from './config'
 import { LegendaryUser } from 'backend/storeManagers/legendary/user'
 import { GOGUser } from './storeManagers/gog/user'
 import gogPresence from './storeManagers/gog/presence'
 import { NileUser } from './storeManagers/nile/user'
+import { ZoomUser } from './storeManagers/zoom/user'
 import {
   clearCache,
   isEpicServiceOffline,
@@ -76,7 +77,12 @@ import {
   logWarning
 } from './logger'
 import { gameInfoStore } from 'backend/storeManagers/legendary/electronStores'
-import { launchEventCallback, readKnownFixes, runWineCommand } from './launcher'
+import {
+  launchEventCallback,
+  readKnownFixes,
+  runWineCommand,
+  validWine
+} from './launcher'
 import { initQueue } from './downloadmanager/downloadqueue'
 import {
   initOnlineMonitor,
@@ -236,7 +242,7 @@ async function initializeWindow(): Promise<BrowserWindow> {
     const { exitToTray, noTrayIcon } = GlobalConfig.get().getSettings()
 
     if (exitToTray && !noTrayIcon) {
-      logInfo('Exitting to tray instead of quitting', LogPrefix.Backend)
+      logInfo('Exiting to tray instead of quitting', LogPrefix.Backend)
       return mainWindow.hide()
     }
 
@@ -252,7 +258,7 @@ async function initializeWindow(): Promise<BrowserWindow> {
   } else {
     Menu.setApplicationMenu(null)
     mainWindow.loadFile(join(publicDir, 'index.html'))
-    if (globalConf.checkForUpdatesOnStartup && !isLinux) {
+    if (globalConf.checkForUpdatesOnStartup) {
       autoUpdater.checkForUpdates()
     }
   }
@@ -312,7 +318,7 @@ const processZoomForScreen = (zoomFactor: number) => {
 }
 
 if (!gotTheLock) {
-  logInfo('Heroic is already running, quitting this instance')
+  console.log('Heroic is already running, quitting this instance')
   app.quit()
 } else {
   app.on('second-instance', (event, argv) => {
@@ -529,32 +535,34 @@ process.on('uncaughtException', async (err) => {
   })
 })
 
-let powerId: number | null
-let displaySleepId: number | null
+let powerId: number | undefined
+let displaySleepId: number | undefined
 
 addListener('lock', (e, playing: boolean) => {
-  if (!playing && (!powerId || !powerSaveBlocker.isStarted(powerId))) {
+  const isSleepBlocked = powerId !== undefined
+  const isDisplaySleepBlocked = displaySleepId !== undefined
+
+  if (!playing && !isSleepBlocked) {
     logInfo('Preventing machine to sleep', LogPrefix.Backend)
     powerId = powerSaveBlocker.start('prevent-app-suspension')
   }
 
-  if (
-    playing &&
-    (!displaySleepId || !powerSaveBlocker.isStarted(displaySleepId))
-  ) {
+  if (playing && !isDisplaySleepBlocked) {
     logInfo('Preventing display to sleep', LogPrefix.Backend)
     displaySleepId = powerSaveBlocker.start('prevent-display-sleep')
   }
 })
 
 addListener('unlock', () => {
-  if (powerId && powerSaveBlocker.isStarted(powerId)) {
+  if (powerId !== undefined) {
     logInfo('Stopping Power Saver Blocker', LogPrefix.Backend)
     powerSaveBlocker.stop(powerId)
+    powerId = undefined
   }
-  if (displaySleepId && powerSaveBlocker.isStarted(displaySleepId)) {
+  if (displaySleepId !== undefined) {
     logInfo('Stopping Display Sleep Blocker', LogPrefix.Backend)
     powerSaveBlocker.stop(displaySleepId)
+    displaySleepId = undefined
   }
 })
 
@@ -783,6 +791,16 @@ addListener('logoutGOG', GOGUser.logout)
 addHandler('getAmazonLoginData', NileUser.getLoginData)
 addHandler('authAmazon', async (event, data) => NileUser.login(data))
 addHandler('logoutAmazon', NileUser.logout)
+
+addHandler('authZoom', async (event, url) => {
+  const login = await ZoomUser.login(url)
+  if (login.status === 'done') {
+    await ZoomUser.getUserDetails()
+  }
+  return login
+})
+addListener('logoutZoom', ZoomUser.logout)
+addHandler('getZoomUserInfo', async () => ZoomUser.getUserDetails())
 
 addHandler('getAlternativeWine', async () =>
   GlobalConfig.get().getAlternativeWine()
@@ -1057,9 +1075,31 @@ addHandler('syncGOGSaves', async (event, gogSaves, appName, arg) =>
   gameManagerMap['gog'].syncSaves(appName, arg, '', gogSaves)
 )
 
-addHandler('getLaunchOptions', async (event, appName, runner) =>
-  libraryManagerMap[runner].getLaunchOptions(appName)
-)
+addHandler('getLaunchOptions', async (event, appName, runner) => {
+  const availableLaunchOptions =
+    await libraryManagerMap[runner].getLaunchOptions(appName)
+
+  // add a default option if there are other options but no default
+  if (
+    availableLaunchOptions.length > 0 &&
+    !availableLaunchOptions.some(
+      (option) =>
+        (option.type === undefined || option.type === 'basic') &&
+        option.name === 'Default' &&
+        option.parameters === ''
+    )
+  ) {
+    availableLaunchOptions.unshift({
+      name: i18next.t('launch.default', 'Default', {
+        ns: 'gamepage'
+      }),
+      parameters: '',
+      type: 'basic'
+    })
+  }
+
+  return availableLaunchOptions
+})
 
 addHandler('syncSaves', async (event, { arg = '', path, appName, runner }) => {
   if (runner === 'legendary') {
@@ -1336,8 +1376,8 @@ addHandler('getKnownFixes', (e, appName, runner) =>
   readKnownFixes(appName, runner)
 )
 
-addHandler('installSteamWindows', async (e, path) =>
-  SteamWindows.installSteam(path)
+addHandler('wine.isValidVersion', async (e, wineVersion: WineInstallation) =>
+  validWine(wineVersion)
 )
 
 /*
